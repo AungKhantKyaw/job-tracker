@@ -11,49 +11,51 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const isLoginPage = pathname === '/admin/login';
 
-  useEffect(() => {
-    // 1. If we are on the login page, we don't need to check authorization
+  useEffect(() => {   
     if (isLoginPage) {
       setIsAuthorized(false); 
       return;
     }
 
-    // 2. Check for token and role
     const token = localStorage.getItem('token');
     const userJson = localStorage.getItem('user');
     const user = userJson ? JSON.parse(userJson) : null;
-
-    // Use the role from the user object or a separate localStorage key
     const role = user?.role || localStorage.getItem('role');
 
-    if (!token || role !== 'admin') {
-      // Clear anything left over if they aren't authorized
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      localStorage.removeItem('role');
-      
+    if (!token) {
+      localStorage.clear();
       router.push('/admin/login');
-    } else {
-      setIsAuthorized(true);
+      return;
     }
+    
+    // Define paths that ONLY an Admin can access
+    const adminOnlyPaths = ['/admin/user', '/admin/status'];
+    const isTryingAdminPath = adminOnlyPaths.some(path => pathname.startsWith(path));
+
+    if (isTryingAdminPath && role !== 'admin') {      
+      router.push('/admin/dashboard');
+      return;
+    }
+
+    // If all checks pass
+    setIsAuthorized(true);
   }, [router, isLoginPage, pathname]);
 
-  // 3. Render the login page without the Header
+  // Handle Login Page view
   if (isLoginPage) {
     return <>{children}</>;
   }
 
-  // 4. Show a clean loading state while verifying the token
+  // Loading state to prevent "flashing" of private content
   if (!isAuthorized) {
     return (
       <div style={styles.loadingWrapper}>
         <div style={styles.spinner}></div>
-        <p style={styles.loadingText}>Verifying credentials...</p>
+        <p style={styles.loadingText}>Verifying permissions...</p>
       </div>
     );
   }
 
-  // 5. Protected Layout with Navigation Header
   return (
     <div style={styles.layoutContainer}>
       <AdminHeader />
@@ -97,3 +99,9 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontWeight: '500'
   }
 };
+
+if (typeof document !== 'undefined') {
+  const styleSheet = document.styleSheets[0];
+  const keyframes = `@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`;
+  styleSheet.insertRule(keyframes, styleSheet.cssRules.length);
+}

@@ -29,11 +29,8 @@ const Login = () => {
       localStorage.setItem('userName', response.data.user.name);
       localStorage.setItem('user', JSON.stringify(response.data.user));
 
-      if (response.data.user.role === 'admin') {
-        router.push('/admin/dashboard');
-      } else {
-        router.push('/dashboard');
-      }
+      router.push('/admin/dashboard');
+      
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid email or password. Please try again.');
     } finally {

@@ -7,8 +7,10 @@ const userSchema = new mongoose.Schema({
   role: {
     type: String,
     enum: ["user", "admin"],
-    default: "user"          // most people are normal users
+    default: "user"
   },
+  isVerified: { type: Boolean, default: false },
+  verificationToken: { type: String },
   createdAt: { type: Date, default: Date.now }
 });
 

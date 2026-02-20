@@ -103,18 +103,34 @@ router.get('/', protect, admin, async (req, res) => {
 });
 
 // PUT - Update specific user by ID (Admin only)
+// PUT - Update specific user by ID (Admin only)
 router.put('/:id', protect, admin, async (req, res) => {
     try {
-        const { name, email, role } = req.body;
+        const { name, email, role, isVerified, password } = req.body; 
         
-        const updatedUser = await User.findByIdAndUpdate(
-            req.params.id,
-            { name, email, role },
-            { new: true, runValidators: true }
-        ).select('-password');
+        // Find user first
+        const user = await User.findById(req.params.id);
+        if (!user) return res.status(404).json({ message: "User not found" });
 
-        if (!updatedUser) return res.status(404).json({ message: "User not found" });
-        res.json(updatedUser);
+        // Update fields
+        user.name = name || user.name;
+        user.email = email || user.email;
+        user.role = role || user.role;
+        
+        // Manually set verification status
+        if (typeof isVerified !== 'undefined') {
+            user.isVerified = isVerified;
+        }
+
+        // If admin provided a new password in the edit form
+        if (password) {
+            const salt = await bcrypt.genSalt(10);
+            user.password = await bcrypt.hash(password, salt);
+        }
+
+        await user.save();
+        
+        res.json({ message: "User updated successfully" });
     } catch (err) {
         res.status(400).json({ message: err.message });
     }

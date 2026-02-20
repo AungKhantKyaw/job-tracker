@@ -35,7 +35,7 @@ const AdminHeader = () => {
 
       <nav style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
         <a href="/admin/dashboard" style={{ textDecoration: 'none', color: '#0070f3' }}>Dashboard</a>
-        <a href="/admin/job" style={{ textDecoration: 'none', color: '#0070f3' }}>Jobs</a>
+        <a href="/admin/job" style={{ textDecoration: 'none', color: '#0070f3' }}>Job Application</a>
         <a href="/admin/status" style={{ textDecoration: 'none', color: '#0070f3' }}>Status</a>
         
         <button 

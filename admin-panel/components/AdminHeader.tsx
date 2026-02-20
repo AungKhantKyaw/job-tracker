@@ -1,9 +1,16 @@
 "use client";
 
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-const AdminHeader = ({ userName }) => {
+const AdminHeader = () => {
+  const [userName, setUserName] = useState('');
   const router = useRouter();
+
+  useEffect(() => {    
+    const storedName = localStorage.getItem('userName');
+    setUserName(storedName || 'Admin');
+  }, []);
 
   const handleLogout = () => {
     // Clear everything from local storage
@@ -28,7 +35,7 @@ const AdminHeader = ({ userName }) => {
 
       <nav style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
         <a href="/admin/dashboard" style={{ textDecoration: 'none', color: '#0070f3' }}>Dashboard</a>
-        <a href="/admin/jobs" style={{ textDecoration: 'none', color: '#0070f3' }}>Jobs</a>
+        <a href="/admin/job" style={{ textDecoration: 'none', color: '#0070f3' }}>Jobs</a>
         
         <button 
           onClick={handleLogout} 

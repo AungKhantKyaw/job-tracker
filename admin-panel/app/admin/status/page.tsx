@@ -1,0 +1,280 @@
+"use client";
+
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+
+const StatusPage = () => {
+  const [statusData, setStatusData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [newLabel, setNewLabel] = useState('');
+  const [editingId, setEditingId] = useState(null);
+  const [editLabel, setEditLabel] = useState('');
+  const [error, setError] = useState('');
+
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002';
+
+  const fetchStatus = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${baseUrl}/status`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setStatusData(response.data);
+      setError('');
+    } catch (err) {
+      setError("Failed to load statuses.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchStatus(); }, []);
+
+  const handleAdd = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`${baseUrl}/status`, { label: newLabel }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setNewLabel('');
+      fetchStatus();
+    } catch (err) {
+      setError(err.response?.data?.message || "Error adding status");
+    }
+  };
+
+  const handleUpdate = async (id) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(`${baseUrl}/status/${id}`, { label: editLabel }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setEditingId(null);
+      fetchStatus();
+    } catch (err) {
+      setError(err.response?.data?.message || "Error updating status");
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!confirm("Are you sure? This will fail if jobs are currently using this status.")) return;
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`${baseUrl}/status/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchStatus();
+    } catch (err) {
+      setError(err.response?.data?.message || "Error deleting status");
+    }
+  };
+
+  return (
+    <div style={styles.container}>
+      <div style={styles.card}>
+        <h2 style={styles.title}>Manage Statuses</h2>
+        <p style={styles.subtitle}>Define the stages for your job application funnel.</p>
+        
+        {error && <div style={styles.errorBanner}>{error}</div>}
+
+        {/* Add Form */}
+        <form onSubmit={handleAdd} style={styles.form}>
+          <input 
+            type="text" 
+            placeholder="e.g. Technical Interview" 
+            value={newLabel} 
+            onChange={(e) => setNewLabel(e.target.value)}
+            style={styles.input}
+            required
+          />
+          <button type="submit" style={styles.addButton}>Add New</button>
+        </form>
+
+        {loading ? (
+          <div style={styles.loader}>Loading statuses...</div>
+        ) : (
+          <div style={styles.list}>
+            {statusData.map((item) => (
+              <div key={item._id} style={styles.listItem}>
+                
+                {editingId === item._id ? (
+                  <div style={styles.editRow}>
+                    <input 
+                      value={editLabel} 
+                      onChange={(e) => setEditLabel(e.target.value)} 
+                      style={styles.inputSmall}
+                      autoFocus
+                    />
+                    <div style={styles.buttonGroup}>
+                      <button onClick={() => handleUpdate(item._id)} style={styles.saveButton}>Save</button>
+                      <button onClick={() => setEditingId(null)} style={styles.cancelButton}>Cancel</button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <span style={styles.labelText}>{item.label}</span>
+                    <div style={styles.buttonGroup}>
+                      <button 
+                        onClick={() => { setEditingId(item._id); setEditLabel(item.label); }}
+                        style={styles.editButton}
+                      >
+                        Edit
+                      </button>
+                      <button 
+                        onClick={() => handleDelete(item._id)}
+                        style={styles.deleteButton}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const styles = {
+  container: {
+    padding: '40px 20px',
+    backgroundColor: '#f4f7f6',
+    minHeight: '100vh',
+    fontFamily: '"Inter", system-ui, sans-serif',
+  },
+  card: {
+    maxWidth: '700px',
+    margin: '0 auto',
+    backgroundColor: '#fff',
+    padding: '30px',
+    borderRadius: '12px',
+    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+  },
+  title: {
+    margin: '0 0 8px 0',
+    color: '#1a202c',
+    fontSize: '24px',
+    fontWeight: '700',
+  },
+  subtitle: {
+    margin: '0 0 24px 0',
+    color: '#718096',
+    fontSize: '14px',
+  },
+  errorBanner: {
+    backgroundColor: '#fff5f5',
+    color: '#c53030',
+    padding: '12px',
+    borderRadius: '6px',
+    marginBottom: '20px',
+    fontSize: '14px',
+    border: '1px solid #feb2b2',
+  },
+  form: {
+    display: 'flex',
+    gap: '12px',
+    marginBottom: '30px',
+  },
+  input: {
+    flex: 1,
+    padding: '12px 16px',
+    borderRadius: '8px',
+    border: '1px solid #e2e8f0',
+    fontSize: '16px',
+    outline: 'none',
+    transition: 'border-color 0.2s',
+  },
+  inputSmall: {
+    padding: '8px 12px',
+    borderRadius: '6px',
+    border: '1px solid #3182ce',
+    fontSize: '14px',
+    flex: 1,
+  },
+  addButton: {
+    padding: '12px 24px',
+    backgroundColor: '#3182ce',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '8px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'background-color 0.2s',
+  },
+  list: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+  },
+  listItem: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '16px',
+    borderRadius: '10px',
+    border: '1px solid #edf2f7',
+    backgroundColor: '#f8fafc',
+    transition: 'transform 0.1s',
+  },
+  labelText: {
+    fontWeight: '500',
+    color: '#2d3748',
+  },
+  buttonGroup: {
+    display: 'flex',
+    gap: '8px',
+  },
+  editRow: {
+    display: 'flex',
+    flex: 1,
+    gap: '10px',
+    alignItems: 'center',
+  },
+  editButton: {
+    padding: '6px 12px',
+    backgroundColor: '#fff',
+    border: '1px solid #e2e8f0',
+    borderRadius: '6px',
+    fontSize: '13px',
+    cursor: 'pointer',
+    color: '#4a5568',
+  },
+  deleteButton: {
+    padding: '6px 12px',
+    backgroundColor: '#fff5f5',
+    border: '1px solid #feb2b2',
+    borderRadius: '6px',
+    fontSize: '13px',
+    cursor: 'pointer',
+    color: '#c53030',
+  },
+  saveButton: {
+    padding: '6px 12px',
+    backgroundColor: '#38a169',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '6px',
+    fontSize: '13px',
+    cursor: 'pointer',
+  },
+  cancelButton: {
+    padding: '6px 12px',
+    backgroundColor: '#718096',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '6px',
+    fontSize: '13px',
+    cursor: 'pointer',
+  },
+  loader: {
+    textAlign: 'center',
+    color: '#a0aec0',
+    padding: '20px',
+  }
+};
+
+export default StatusPage;

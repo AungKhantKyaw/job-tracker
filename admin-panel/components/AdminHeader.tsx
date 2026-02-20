@@ -17,6 +17,7 @@ const AdminHeader = () => {
     localStorage.clear(); 
     // Send them back to the admin login page
     router.push('/admin/login');
+    router.refresh();
   };
 
   return (
@@ -37,7 +38,7 @@ const AdminHeader = () => {
         <a href="/admin/dashboard" style={{ textDecoration: 'none', color: '#0070f3' }}>Dashboard</a>
         <a href="/admin/job" style={{ textDecoration: 'none', color: '#0070f3' }}>Job Application</a>
         <a href="/admin/status" style={{ textDecoration: 'none', color: '#0070f3' }}>Status</a>
-        
+        <a href="/admin/user" style={{ textDecoration: 'none', color: '#0070f3' }}>Manage Users</a>
         <button 
           onClick={handleLogout} 
           style={{ 

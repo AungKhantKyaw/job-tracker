@@ -27,6 +27,7 @@ const Login = () => {
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('role', response.data.user.role);
       localStorage.setItem('userName', response.data.user.name);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
 
       if (response.data.user.role === 'admin') {
         router.push('/admin/dashboard');

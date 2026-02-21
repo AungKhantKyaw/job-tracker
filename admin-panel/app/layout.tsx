@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import axios from 'axios';
+import axios from "axios";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,10 +20,10 @@ axios.interceptors.response.use(
       // Token is invalid or expired
       localStorage.removeItem("token");
       localStorage.removeItem("user");
-      window.location.href = "/login"; 
+      window.location.href = "/login";
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export const metadata: Metadata = {

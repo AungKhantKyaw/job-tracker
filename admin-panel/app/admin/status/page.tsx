@@ -1,33 +1,33 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useEffect, useState } from "react";
+import axios from "axios";
 
 const StatusPage = () => {
   const [statusData, setStatusData] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+
   // States for Adding
-  const [newLabel, setNewLabel] = useState('');
-  const [newColor, setNewColor] = useState('#3182ce'); // Default Blue
-  
+  const [newLabel, setNewLabel] = useState("");
+  const [newColor, setNewColor] = useState("#3182ce");
+
   // States for Editing
   const [editingId, setEditingId] = useState(null);
-  const [editLabel, setEditLabel] = useState('');
-  const [editColor, setEditColor] = useState('#3182ce');
-  
-  const [error, setError] = useState('');
+  const [editLabel, setEditLabel] = useState("");
+  const [editColor, setEditColor] = useState("#3182ce");
 
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002';
+  const [error, setError] = useState("");
+
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
   const fetchStatus = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       const response = await axios.get(`${baseUrl}/status`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       setStatusData(response.data);
-      setError('');
+      setError("");
     } catch (err) {
       setError("Failed to load statuses.");
     } finally {
@@ -35,17 +35,23 @@ const StatusPage = () => {
     }
   };
 
-  useEffect(() => { fetchStatus(); }, []);
+  useEffect(() => {
+    fetchStatus();
+  }, []);
 
   const handleAdd = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('token');
-      await axios.post(`${baseUrl}/status`, { label: newLabel, color: newColor }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setNewLabel('');
-      setNewColor('#3182ce');
+      const token = localStorage.getItem("token");
+      await axios.post(
+        `${baseUrl}/status`,
+        { label: newLabel, color: newColor },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+      setNewLabel("");
+      setNewColor("#3182ce");
       fetchStatus();
     } catch (err) {
       setError(err.response?.data?.message || "Error adding status");
@@ -54,10 +60,14 @@ const StatusPage = () => {
 
   const handleUpdate = async (id) => {
     try {
-      const token = localStorage.getItem('token');
-      await axios.put(`${baseUrl}/status/${id}`, { label: editLabel, color: editColor }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const token = localStorage.getItem("token");
+      await axios.put(
+        `${baseUrl}/status/${id}`,
+        { label: editLabel, color: editColor },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
       setEditingId(null);
       fetchStatus();
     } catch (err) {
@@ -66,11 +76,16 @@ const StatusPage = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!confirm("Are you sure? This will fail if jobs are currently using this status.")) return;
+    if (
+      !confirm(
+        "Are you sure? This will fail if jobs are currently using this status.",
+      )
+    )
+      return;
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       await axios.delete(`${baseUrl}/status/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       fetchStatus();
     } catch (err) {
@@ -82,28 +97,32 @@ const StatusPage = () => {
     <div style={styles.container}>
       <div style={styles.card}>
         <h2 style={styles.title}>Manage Status</h2>
-        <p style={styles.subtitle}>Define funnel stages and their visual colors.</p>
-        
+        <p style={styles.subtitle}>
+          Define funnel stages and their visual colors.
+        </p>
+
         {error && <div style={styles.errorBanner}>{error}</div>}
 
         {/* Add Form */}
         <form onSubmit={handleAdd} style={styles.form}>
-          <input 
-            type="color" 
-            value={newColor} 
+          <input
+            type="color"
+            value={newColor}
             onChange={(e) => setNewColor(e.target.value)}
             style={styles.colorPicker}
             title="Choose status color"
           />
-          <input 
-            type="text" 
-            placeholder="e.g. Technical Interview" 
-            value={newLabel} 
+          <input
+            type="text"
+            placeholder="e.g. Technical Interview"
+            value={newLabel}
             onChange={(e) => setNewLabel(e.target.value)}
             style={styles.input}
             required
           />
-          <button type="submit" style={styles.addButton}>Add</button>
+          <button type="submit" style={styles.addButton}>
+            Add
+          </button>
         </form>
 
         {loading ? (
@@ -112,43 +131,62 @@ const StatusPage = () => {
           <div style={styles.list}>
             {statusData.map((item) => (
               <div key={item._id} style={styles.listItem}>
-                
                 {editingId === item._id ? (
                   <div style={styles.editRow}>
-                    <input 
+                    <input
                       type="color"
                       value={editColor}
                       onChange={(e) => setEditColor(e.target.value)}
                       style={styles.colorPickerSmall}
                     />
-                    <input 
-                      value={editLabel} 
-                      onChange={(e) => setEditLabel(e.target.value)} 
+                    <input
+                      value={editLabel}
+                      onChange={(e) => setEditLabel(e.target.value)}
                       style={styles.inputSmall}
                     />
                     <div style={styles.buttonGroup}>
-                      <button onClick={() => handleUpdate(item._id)} style={styles.saveButton}>Save</button>
-                      <button onClick={() => setEditingId(null)} style={styles.cancelButton}>X</button>
+                      <button
+                        onClick={() => handleUpdate(item._id)}
+                        style={styles.saveButton}
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={() => setEditingId(null)}
+                        style={styles.cancelButton}
+                      >
+                        X
+                      </button>
                     </div>
                   </div>
                 ) : (
                   <>
                     <div style={styles.labelContainer}>
-                      <span style={{ ...styles.colorDot, backgroundColor: item.color }}></span>
+                      <span
+                        style={{
+                          ...styles.colorDot,
+                          backgroundColor: item.color,
+                        }}
+                      ></span>
                       <span style={styles.labelText}>{item.label}</span>
                     </div>
                     <div style={styles.buttonGroup}>
-                      <button 
-                        onClick={() => { 
-                          setEditingId(item._id); 
-                          setEditLabel(item.label); 
-                          setEditColor(item.color || '#888888');
+                      <button
+                        onClick={() => {
+                          setEditingId(item._id);
+                          setEditLabel(item.label);
+                          setEditColor(item.color || "#888888");
                         }}
                         style={styles.editButton}
                       >
                         Edit
                       </button>
-                      <button onClick={() => handleDelete(item._id)} style={styles.deleteButton}>Delete</button>
+                      <button
+                        onClick={() => handleDelete(item._id)}
+                        style={styles.deleteButton}
+                      >
+                        Delete
+                      </button>
                     </div>
                   </>
                 )}
@@ -162,29 +200,132 @@ const StatusPage = () => {
 };
 
 const styles = {
-  container: { padding: '40px 20px', minHeight: '100vh', fontFamily: '"Inter", sans-serif' },
-  card: { maxWidth: '600px', margin: '0 auto', backgroundColor: '#fff', padding: '30px', borderRadius: '12px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' },
-  title: { margin: '0 0 8px 0', color: '#1a202c', fontSize: '24px', fontWeight: '700' },
-  subtitle: { margin: '0 0 24px 0', color: '#718096', fontSize: '14px' },
-  errorBanner: { backgroundColor: '#fff5f5', color: '#c53030', padding: '12px', borderRadius: '6px', marginBottom: '20px', border: '1px solid #feb2b2' },
-  form: { display: 'flex', gap: '10px', marginBottom: '30px', alignItems: 'center' },
-  colorPicker: { padding: '0', width: '45px', height: '45px', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer', background: 'none' },
-  colorPickerSmall: { padding: '0', width: '30px', height: '30px', border: '1px solid #e2e8f0', borderRadius: '4px', cursor: 'pointer', background: 'none' },
-  input: { flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '16px' },
-  inputSmall: { padding: '6px 10px', borderRadius: '6px', border: '1px solid #3182ce', fontSize: '14px', flex: 1 },
-  addButton: { padding: '12px 20px', backgroundColor: '#3182ce', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' },
-  list: { display: 'flex', flexDirection: 'column', gap: '10px' },
-  listItem: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderRadius: '10px', border: '1px solid #edf2f7', backgroundColor: '#f8fafc' },
-  labelContainer: { display: 'flex', alignItems: 'center', gap: '12px' },
-  colorDot: { width: '12px', height: '12px', borderRadius: '50%' },
-  labelText: { fontWeight: '500', color: '#2d3748' },
-  buttonGroup: { display: 'flex', gap: '8px' },
-  editRow: { display: 'flex', flex: 1, gap: '10px', alignItems: 'center' },
-  editButton: { padding: '5px 10px', backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', cursor: 'pointer' },
-  deleteButton: { padding: '5px 10px', backgroundColor: '#fff', border: '1px solid #feb2b2', borderRadius: '6px', fontSize: '12px', cursor: 'pointer', color: '#c53030' },
-  saveButton: { padding: '5px 10px', backgroundColor: '#38a169', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '12px', cursor: 'pointer' },
-  cancelButton: { padding: '5px 10px', backgroundColor: '#718096', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '12px', cursor: 'pointer' },
-  loader: { textAlign: 'center', color: '#a0aec0', padding: '20px' }
+  container: {
+    padding: "40px 20px",
+    minHeight: "100vh",
+    fontFamily: '"Inter", sans-serif',
+  },
+  card: {
+    maxWidth: "600px",
+    margin: "0 auto",
+    backgroundColor: "#fff",
+    padding: "30px",
+    borderRadius: "12px",
+    boxShadow: "0 4px 15px rgba(0,0,0,0.05)",
+  },
+  title: {
+    margin: "0 0 8px 0",
+    color: "#1a202c",
+    fontSize: "24px",
+    fontWeight: "700",
+  },
+  subtitle: { margin: "0 0 24px 0", color: "#718096", fontSize: "14px" },
+  errorBanner: {
+    backgroundColor: "#fff5f5",
+    color: "#c53030",
+    padding: "12px",
+    borderRadius: "6px",
+    marginBottom: "20px",
+    border: "1px solid #feb2b2",
+  },
+  form: {
+    display: "flex",
+    gap: "10px",
+    marginBottom: "30px",
+    alignItems: "center",
+  },
+  colorPicker: {
+    padding: "0",
+    width: "45px",
+    height: "45px",
+    border: "1px solid #e2e8f0",
+    borderRadius: "8px",
+    cursor: "pointer",
+    background: "none",
+  },
+  colorPickerSmall: {
+    padding: "0",
+    width: "30px",
+    height: "30px",
+    border: "1px solid #e2e8f0",
+    borderRadius: "4px",
+    cursor: "pointer",
+    background: "none",
+  },
+  input: {
+    flex: 1,
+    padding: "12px",
+    borderRadius: "8px",
+    border: "1px solid #e2e8f0",
+    fontSize: "16px",
+  },
+  inputSmall: {
+    padding: "6px 10px",
+    borderRadius: "6px",
+    border: "1px solid #3182ce",
+    fontSize: "14px",
+    flex: 1,
+  },
+  addButton: {
+    padding: "12px 20px",
+    backgroundColor: "#3182ce",
+    color: "#fff",
+    border: "none",
+    borderRadius: "8px",
+    fontWeight: "600",
+    cursor: "pointer",
+  },
+  list: { display: "flex", flexDirection: "column", gap: "10px" },
+  listItem: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "12px 16px",
+    borderRadius: "10px",
+    border: "1px solid #edf2f7",
+    backgroundColor: "#f8fafc",
+  },
+  labelContainer: { display: "flex", alignItems: "center", gap: "12px" },
+  colorDot: { width: "12px", height: "12px", borderRadius: "50%" },
+  labelText: { fontWeight: "500", color: "#2d3748" },
+  buttonGroup: { display: "flex", gap: "8px" },
+  editRow: { display: "flex", flex: 1, gap: "10px", alignItems: "center" },
+  editButton: {
+    padding: "5px 10px",
+    backgroundColor: "#fff",
+    border: "1px solid #e2e8f0",
+    borderRadius: "6px",
+    fontSize: "12px",
+    cursor: "pointer",
+  },
+  deleteButton: {
+    padding: "5px 10px",
+    backgroundColor: "#fff",
+    border: "1px solid #feb2b2",
+    borderRadius: "6px",
+    fontSize: "12px",
+    cursor: "pointer",
+    color: "#c53030",
+  },
+  saveButton: {
+    padding: "5px 10px",
+    backgroundColor: "#38a169",
+    color: "#fff",
+    border: "none",
+    borderRadius: "6px",
+    fontSize: "12px",
+    cursor: "pointer",
+  },
+  cancelButton: {
+    padding: "5px 10px",
+    backgroundColor: "#718096",
+    color: "#fff",
+    border: "none",
+    borderRadius: "6px",
+    fontSize: "12px",
+    cursor: "pointer",
+  },
+  loader: { textAlign: "center", color: "#a0aec0", padding: "20px" },
 };
 
 export default StatusPage;

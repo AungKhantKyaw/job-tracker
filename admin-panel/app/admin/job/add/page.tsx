@@ -15,7 +15,7 @@ const AddJobPage = () => {
     role: "",
     location: "",
     salaryRange: "",
-    status: "Applied",
+    status: "",
     appliedDate: new Date().toISOString().split("T")[0],
     link: "",
     description: "",
@@ -35,8 +35,10 @@ const AddJobPage = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
         setStatuses(res.data);
+
         if (res.data.length > 0) {
-          setFormData((prev) => ({ ...prev, status: res.data[0].label }));
+          // CHANGE THIS LINE: use ._id instead of .label
+          setFormData((prev) => ({ ...prev, status: res.data[0]._id }));
         }
       } catch (err) {
         console.error("Could not load statuses");
@@ -53,6 +55,11 @@ const AddJobPage = () => {
     e.preventDefault();
     setLoading(true);
     setError("");
+
+    if (!formData.status) {
+      setError("Please select a status.");
+      return;
+    }
 
     try {
       const token = localStorage.getItem("token");
@@ -108,11 +115,10 @@ const AddJobPage = () => {
                 style={styles.floatingInput}
               >
                 {statuses.map((s) => (
-                  <option key={s._id} value={s.label}>
+                  <option key={s._id} value={s._id}>
                     {s.label}
                   </option>
                 ))}
-                {statuses.length === 0 && <option value="Applied">Applied</option>}
               </select>
               <label style={styles.floatingLabel}>Status</label>
             </div>
@@ -223,7 +229,11 @@ const AddJobPage = () => {
 
           {/* Actions */}
           <div style={styles.actionArea}>
-            <button type="button" onClick={() => router.back()} style={styles.cancelBtn}>
+            <button
+              type="button"
+              onClick={() => router.back()}
+              style={styles.cancelBtn}
+            >
               Cancel
             </button>
             <button

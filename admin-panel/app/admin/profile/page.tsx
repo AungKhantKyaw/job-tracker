@@ -4,7 +4,11 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 
 const ProfilePage = () => {
-  const [formData, setFormData] = useState({ name: "", email: "", password: "" });
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
   const [message, setMessage] = useState({ type: "", text: "" });
   const [loading, setLoading] = useState(false);
 
@@ -13,7 +17,11 @@ const ProfilePage = () => {
   useEffect(() => {
     // Get current user info from localStorage (stored during login)
     const savedUser = JSON.parse(localStorage.getItem("user") || "{}");
-    setFormData({ name: savedUser.name || "", email: savedUser.email || "", password: "" });
+    setFormData({
+      name: savedUser.name || "",
+      email: savedUser.email || "",
+      password: "",
+    });
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -29,7 +37,10 @@ const ProfilePage = () => {
       localStorage.setItem("user", JSON.stringify(res.data));
       setMessage({ type: "success", text: "Profile updated successfully!" });
     } catch (err: any) {
-      setMessage({ type: "error", text: err.response?.data?.message || "Update failed" });
+      setMessage({
+        type: "error",
+        text: err.response?.data?.message || "Update failed",
+      });
     } finally {
       setLoading(false);
     }
@@ -42,7 +53,14 @@ const ProfilePage = () => {
         <p style={styles.subtitle}>Update your personal information</p>
 
         {message.text && (
-          <div style={{ ...styles.alert, backgroundColor: message.type === "success" ? "#dcfce7" : "#fee2e2", color: message.type === "success" ? "#166534" : "#991b1b" }}>
+          <div
+            style={{
+              ...styles.alert,
+              backgroundColor:
+                message.type === "success" ? "#dcfce7" : "#fee2e2",
+              color: message.type === "success" ? "#166534" : "#991b1b",
+            }}
+          >
             {message.text}
           </div>
         )}
@@ -50,31 +68,39 @@ const ProfilePage = () => {
         <form onSubmit={handleSubmit} style={styles.form}>
           <div style={styles.inputGroup}>
             <label style={styles.label}>Full Name</label>
-            <input 
-              type="text" 
-              value={formData.name} 
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })} 
-              style={styles.input} 
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+              style={styles.input}
             />
           </div>
 
           <div style={styles.inputGroup}>
             <label style={styles.label}>Email Address</label>
-            <input 
-              type="email" 
-              value={formData.email} 
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })} 
-              style={styles.input} 
+            <input
+              type="email"
+              value={formData.email}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
+              style={styles.input}
             />
           </div>
 
           <div style={styles.inputGroup}>
-            <label style={styles.label}>New Password (leave blank to keep current)</label>
-            <input 
-              type="password" 
-              value={formData.password} 
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })} 
-              style={styles.input} 
+            <label style={styles.label}>
+              New Password (leave blank to keep current)
+            </label>
+            <input
+              type="password"
+              value={formData.password}
+              onChange={(e) =>
+                setFormData({ ...formData, password: e.target.value })
+              }
+              style={styles.input}
               placeholder="••••••••"
             />
           </div>
@@ -89,16 +115,54 @@ const ProfilePage = () => {
 };
 
 const styles: { [key: string]: React.CSSProperties } = {
-  container: { padding: "60px 20px", display: "flex", justifyContent: "center", backgroundColor: "#f9fafb", minHeight: "90vh" },
-  card: { backgroundColor: "#fff", padding: "40px", borderRadius: "16px", boxShadow: "0 4px 20px rgba(0,0,0,0.08)", width: "100%", maxWidth: "500px" },
-  title: { fontSize: "24px", fontWeight: "700", marginBottom: "8px", color: "#111827" },
+  container: {
+    padding: "60px 20px",
+    display: "flex",
+    justifyContent: "center",
+    backgroundColor: "#f9fafb",
+    minHeight: "90vh",
+  },
+  card: {
+    backgroundColor: "#fff",
+    padding: "40px",
+    borderRadius: "16px",
+    boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+    width: "100%",
+    maxWidth: "500px",
+  },
+  title: {
+    fontSize: "24px",
+    fontWeight: "700",
+    marginBottom: "8px",
+    color: "#111827",
+  },
   subtitle: { fontSize: "14px", color: "#6b7280", marginBottom: "30px" },
   form: { display: "flex", flexDirection: "column", gap: "20px" },
   inputGroup: { display: "flex", flexDirection: "column", gap: "8px" },
   label: { fontSize: "14px", fontWeight: "600", color: "#374151" },
-  input: { padding: "12px", borderRadius: "8px", border: "1px solid #d1d5db", fontSize: "15px", outline: "none" },
-  button: { padding: "14px", backgroundColor: "#2563eb", color: "#fff", border: "none", borderRadius: "8px", fontWeight: "600", cursor: "pointer", marginTop: "10px" },
-  alert: { padding: "12px", borderRadius: "8px", fontSize: "14px", textAlign: "center" }
+  input: {
+    padding: "12px",
+    borderRadius: "8px",
+    border: "1px solid #d1d5db",
+    fontSize: "15px",
+    outline: "none",
+  },
+  button: {
+    padding: "14px",
+    backgroundColor: "#2563eb",
+    color: "#fff",
+    border: "none",
+    borderRadius: "8px",
+    fontWeight: "600",
+    cursor: "pointer",
+    marginTop: "10px",
+  },
+  alert: {
+    padding: "12px",
+    borderRadius: "8px",
+    fontSize: "14px",
+    textAlign: "center",
+  },
 };
 
 export default ProfilePage;

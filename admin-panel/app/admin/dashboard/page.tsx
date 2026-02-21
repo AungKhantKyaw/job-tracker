@@ -67,9 +67,13 @@ const AdminDashboard = () => {
 
   const stats = {
     total: jobs.length,
-    interviewing: jobs.filter((j) => j.status === "Interviewing").length,
-    offers: jobs.filter((j) => j.status === "Offered").length,
-    rejected: jobs.filter((j) => j.status === "Rejected").length,
+    interviewing: jobs.filter(
+      (j) => (j.status?.label || j.status) === "Interviewing",
+    ).length,
+    offers: jobs.filter((j) => (j.status?.label || j.status) === "Offered")
+      .length,
+    rejected: jobs.filter((j) => (j.status?.label || j.status) === "Rejected")
+      .length,
   };
 
   if (loading)
@@ -174,8 +178,17 @@ const AdminDashboard = () => {
                   <h4 style={styles.jobTitle}>{job.role}</h4>
                   <p style={styles.jobMeta}>{job.company}</p>
                 </div>
-                <span style={{ ...styles.badge, backgroundColor: "#f3f4f6" }}>
-                  {job.status}
+                <span
+                  style={{
+                    ...styles.badge,
+                    backgroundColor: job.status?.color
+                      ? job.status.color + "20"
+                      : "#f3f4f6",
+                    color: job.status?.color || "#6b7280",
+                  }}
+                >
+                  {job.status?.label ||
+                    (typeof job.status === "string" ? job.status : "No Status")}
                 </span>
               </div>
             ))}

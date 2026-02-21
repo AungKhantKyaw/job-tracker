@@ -46,7 +46,8 @@ const AdminHeader = () => {
 
       <nav style={styles.nav}>
         <Link href="/admin/dashboard" style={navLinkStyle}>Dashboard</Link>
-        <Link href="/admin/job" style={navLinkStyle}>Applications</Link>               
+        <Link href="/admin/job" style={navLinkStyle}>Applications</Link>  
+        <Link href="/admin/status" style={navLinkStyle}>Status</Link>             
         <Link href="/admin/profile" style={navLinkStyle}>My Profile</Link>
       
         {userRole === 'admin' && (

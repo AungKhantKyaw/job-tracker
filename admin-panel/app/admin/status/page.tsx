@@ -6,9 +6,16 @@ import axios from 'axios';
 const StatusPage = () => {
   const [statusData, setStatusData] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  // States for Adding
   const [newLabel, setNewLabel] = useState('');
+  const [newColor, setNewColor] = useState('#3182ce'); // Default Blue
+  
+  // States for Editing
   const [editingId, setEditingId] = useState(null);
   const [editLabel, setEditLabel] = useState('');
+  const [editColor, setEditColor] = useState('#3182ce');
+  
   const [error, setError] = useState('');
 
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002';
@@ -34,10 +41,11 @@ const StatusPage = () => {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      await axios.post(`${baseUrl}/status`, { label: newLabel }, {
+      await axios.post(`${baseUrl}/status`, { label: newLabel, color: newColor }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNewLabel('');
+      setNewColor('#3182ce');
       fetchStatus();
     } catch (err) {
       setError(err.response?.data?.message || "Error adding status");
@@ -47,7 +55,7 @@ const StatusPage = () => {
   const handleUpdate = async (id) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`${baseUrl}/status/${id}`, { label: editLabel }, {
+      await axios.put(`${baseUrl}/status/${id}`, { label: editLabel, color: editColor }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setEditingId(null);
@@ -73,13 +81,20 @@ const StatusPage = () => {
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        <h2 style={styles.title}>Manage Statuses</h2>
-        <p style={styles.subtitle}>Define the stages for your job application funnel.</p>
+        <h2 style={styles.title}>Manage Status</h2>
+        <p style={styles.subtitle}>Define funnel stages and their visual colors.</p>
         
         {error && <div style={styles.errorBanner}>{error}</div>}
 
         {/* Add Form */}
         <form onSubmit={handleAdd} style={styles.form}>
+          <input 
+            type="color" 
+            value={newColor} 
+            onChange={(e) => setNewColor(e.target.value)}
+            style={styles.colorPicker}
+            title="Choose status color"
+          />
           <input 
             type="text" 
             placeholder="e.g. Technical Interview" 
@@ -88,11 +103,11 @@ const StatusPage = () => {
             style={styles.input}
             required
           />
-          <button type="submit" style={styles.addButton}>Add New</button>
+          <button type="submit" style={styles.addButton}>Add</button>
         </form>
 
         {loading ? (
-          <div style={styles.loader}>Loading statuses...</div>
+          <div style={styles.loader}>Loading...</div>
         ) : (
           <div style={styles.list}>
             {statusData.map((item) => (
@@ -101,32 +116,39 @@ const StatusPage = () => {
                 {editingId === item._id ? (
                   <div style={styles.editRow}>
                     <input 
+                      type="color"
+                      value={editColor}
+                      onChange={(e) => setEditColor(e.target.value)}
+                      style={styles.colorPickerSmall}
+                    />
+                    <input 
                       value={editLabel} 
                       onChange={(e) => setEditLabel(e.target.value)} 
                       style={styles.inputSmall}
-                      autoFocus
                     />
                     <div style={styles.buttonGroup}>
                       <button onClick={() => handleUpdate(item._id)} style={styles.saveButton}>Save</button>
-                      <button onClick={() => setEditingId(null)} style={styles.cancelButton}>Cancel</button>
+                      <button onClick={() => setEditingId(null)} style={styles.cancelButton}>X</button>
                     </div>
                   </div>
                 ) : (
                   <>
-                    <span style={styles.labelText}>{item.label}</span>
+                    <div style={styles.labelContainer}>
+                      <span style={{ ...styles.colorDot, backgroundColor: item.color }}></span>
+                      <span style={styles.labelText}>{item.label}</span>
+                    </div>
                     <div style={styles.buttonGroup}>
                       <button 
-                        onClick={() => { setEditingId(item._id); setEditLabel(item.label); }}
+                        onClick={() => { 
+                          setEditingId(item._id); 
+                          setEditLabel(item.label); 
+                          setEditColor(item.color || '#888888');
+                        }}
                         style={styles.editButton}
                       >
                         Edit
                       </button>
-                      <button 
-                        onClick={() => handleDelete(item._id)}
-                        style={styles.deleteButton}
-                      >
-                        Delete
-                      </button>
+                      <button onClick={() => handleDelete(item._id)} style={styles.deleteButton}>Delete</button>
                     </div>
                   </>
                 )}
@@ -140,141 +162,29 @@ const StatusPage = () => {
 };
 
 const styles = {
-  container: {
-    padding: '40px 20px',
-    backgroundColor: '#f4f7f6',
-    minHeight: '100vh',
-    fontFamily: '"Inter", system-ui, sans-serif',
-  },
-  card: {
-    maxWidth: '700px',
-    margin: '0 auto',
-    backgroundColor: '#fff',
-    padding: '30px',
-    borderRadius: '12px',
-    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-  },
-  title: {
-    margin: '0 0 8px 0',
-    color: '#1a202c',
-    fontSize: '24px',
-    fontWeight: '700',
-  },
-  subtitle: {
-    margin: '0 0 24px 0',
-    color: '#718096',
-    fontSize: '14px',
-  },
-  errorBanner: {
-    backgroundColor: '#fff5f5',
-    color: '#c53030',
-    padding: '12px',
-    borderRadius: '6px',
-    marginBottom: '20px',
-    fontSize: '14px',
-    border: '1px solid #feb2b2',
-  },
-  form: {
-    display: 'flex',
-    gap: '12px',
-    marginBottom: '30px',
-  },
-  input: {
-    flex: 1,
-    padding: '12px 16px',
-    borderRadius: '8px',
-    border: '1px solid #e2e8f0',
-    fontSize: '16px',
-    outline: 'none',
-    transition: 'border-color 0.2s',
-  },
-  inputSmall: {
-    padding: '8px 12px',
-    borderRadius: '6px',
-    border: '1px solid #3182ce',
-    fontSize: '14px',
-    flex: 1,
-  },
-  addButton: {
-    padding: '12px 24px',
-    backgroundColor: '#3182ce',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '8px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'background-color 0.2s',
-  },
-  list: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
-  },
-  listItem: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '16px',
-    borderRadius: '10px',
-    border: '1px solid #edf2f7',
-    backgroundColor: '#f8fafc',
-    transition: 'transform 0.1s',
-  },
-  labelText: {
-    fontWeight: '500',
-    color: '#2d3748',
-  },
-  buttonGroup: {
-    display: 'flex',
-    gap: '8px',
-  },
-  editRow: {
-    display: 'flex',
-    flex: 1,
-    gap: '10px',
-    alignItems: 'center',
-  },
-  editButton: {
-    padding: '6px 12px',
-    backgroundColor: '#fff',
-    border: '1px solid #e2e8f0',
-    borderRadius: '6px',
-    fontSize: '13px',
-    cursor: 'pointer',
-    color: '#4a5568',
-  },
-  deleteButton: {
-    padding: '6px 12px',
-    backgroundColor: '#fff5f5',
-    border: '1px solid #feb2b2',
-    borderRadius: '6px',
-    fontSize: '13px',
-    cursor: 'pointer',
-    color: '#c53030',
-  },
-  saveButton: {
-    padding: '6px 12px',
-    backgroundColor: '#38a169',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '6px',
-    fontSize: '13px',
-    cursor: 'pointer',
-  },
-  cancelButton: {
-    padding: '6px 12px',
-    backgroundColor: '#718096',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '6px',
-    fontSize: '13px',
-    cursor: 'pointer',
-  },
-  loader: {
-    textAlign: 'center',
-    color: '#a0aec0',
-    padding: '20px',
-  }
+  container: { padding: '40px 20px', minHeight: '100vh', fontFamily: '"Inter", sans-serif' },
+  card: { maxWidth: '600px', margin: '0 auto', backgroundColor: '#fff', padding: '30px', borderRadius: '12px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' },
+  title: { margin: '0 0 8px 0', color: '#1a202c', fontSize: '24px', fontWeight: '700' },
+  subtitle: { margin: '0 0 24px 0', color: '#718096', fontSize: '14px' },
+  errorBanner: { backgroundColor: '#fff5f5', color: '#c53030', padding: '12px', borderRadius: '6px', marginBottom: '20px', border: '1px solid #feb2b2' },
+  form: { display: 'flex', gap: '10px', marginBottom: '30px', alignItems: 'center' },
+  colorPicker: { padding: '0', width: '45px', height: '45px', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer', background: 'none' },
+  colorPickerSmall: { padding: '0', width: '30px', height: '30px', border: '1px solid #e2e8f0', borderRadius: '4px', cursor: 'pointer', background: 'none' },
+  input: { flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '16px' },
+  inputSmall: { padding: '6px 10px', borderRadius: '6px', border: '1px solid #3182ce', fontSize: '14px', flex: 1 },
+  addButton: { padding: '12px 20px', backgroundColor: '#3182ce', color: '#fff', border: 'none', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' },
+  list: { display: 'flex', flexDirection: 'column', gap: '10px' },
+  listItem: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderRadius: '10px', border: '1px solid #edf2f7', backgroundColor: '#f8fafc' },
+  labelContainer: { display: 'flex', alignItems: 'center', gap: '12px' },
+  colorDot: { width: '12px', height: '12px', borderRadius: '50%' },
+  labelText: { fontWeight: '500', color: '#2d3748' },
+  buttonGroup: { display: 'flex', gap: '8px' },
+  editRow: { display: 'flex', flex: 1, gap: '10px', alignItems: 'center' },
+  editButton: { padding: '5px 10px', backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '12px', cursor: 'pointer' },
+  deleteButton: { padding: '5px 10px', backgroundColor: '#fff', border: '1px solid #feb2b2', borderRadius: '6px', fontSize: '12px', cursor: 'pointer', color: '#c53030' },
+  saveButton: { padding: '5px 10px', backgroundColor: '#38a169', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '12px', cursor: 'pointer' },
+  cancelButton: { padding: '5px 10px', backgroundColor: '#718096', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '12px', cursor: 'pointer' },
+  loader: { textAlign: 'center', color: '#a0aec0', padding: '20px' }
 };
 
 export default StatusPage;

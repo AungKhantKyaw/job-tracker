@@ -3,25 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-interface Status {
-  _id: string;
-  label: string;
-}
+import type { Status, JobFormData } from "@/types";
 
-interface FormData {
-  company: string;
-  role: string;
-  location: string;
-  salaryRange: string;
-  status: string;
-  appliedDate: string;
-  link: string;
-  description: string;
-  contactPerson: string;
-  contactEmail: string;
-  contactPhone: string;
-  notes: string;
-}
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
@@ -31,7 +14,7 @@ const AddJobPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<JobFormData>({
     company: "",
     role: "",
     location: "",

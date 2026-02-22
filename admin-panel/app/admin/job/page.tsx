@@ -2,21 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-
-interface Status {
-  _id: string;
-  label: string;
-  color: string;
-}
-
-interface Job {
-  _id: string;
-  company: string;
-  role: string;
-  location?: string;
-  appliedDate: string;
-  status?: Status | string;
-}
+import type { Status, Job } from "@/types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 

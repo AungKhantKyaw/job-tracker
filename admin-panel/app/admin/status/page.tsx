@@ -1,12 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
-interface StatusItem {
-  _id: string;
-  label: string;
-  color: string;
-}
+import type { StatusItem } from "@/types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 

@@ -3,20 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-interface User {
-  _id: string;
-  name: string;
-  email: string;
-  role: string;
-  createdAt: string;
-}
-
-interface Pagination {
-  total: number;
-  page: number;
-  pages: number;
-  limit: number;
-}
+import type { User, Pagination } from "@/types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 

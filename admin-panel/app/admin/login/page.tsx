@@ -64,7 +64,7 @@ const Login = () => {
         email: data.user.email,
       }));
             
-      const redirectPath = 'admin/dashboard';
+      const redirectPath = '/admin/dashboard';
      
       router.push(redirectPath);
     } catch (err) {

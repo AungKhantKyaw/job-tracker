@@ -12,21 +12,7 @@ import {
   ResponsiveContainer,
   Cell,
 } from "recharts";
-
-interface Status {
-  _id: string;
-  label: string;
-  color?: string;
-}
-
-interface Job {
-  _id: string;
-  role: string;
-  company: string;
-  createdAt?: string;
-  appliedDate?: string;
-  status?: Status | string;
-}
+import type { Job, Status } from "@/types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 

@@ -3,36 +3,10 @@
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 
+import type { Status, JobFormData, StatusHistory } from "@/types";
+
 interface EditProps {
   params: Promise<{ id: string }>;
-}
-
-interface Status {
-  _id: string;
-  label: string;
-  color?: string;
-}
-
-interface StatusHistory {
-  status: Status | string;
-  date: string;
-}
-
-interface FormData {
-  company: string;
-  role: string;
-  location: string;
-  salaryRange: string;
-  status: string;
-  appliedDate: string;
-  followupDate: string;
-  link: string;
-  description: string;
-  contactPerson: string;
-  contactEmail: string;
-  contactPhone: string;
-  notes: string;
-  statusHistory: StatusHistory[];
 }
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
@@ -52,7 +26,7 @@ const EditJobPage = ({ params: paramsPromise }: EditProps) => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<JobFormData>({
     company: "",
     role: "",
     location: "",

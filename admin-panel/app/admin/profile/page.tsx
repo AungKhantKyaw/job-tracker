@@ -1,17 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-
-interface FormData {
-  name: string;
-  email: string;
-  password: string;
-}
+import type { LoginFormData } from "@/types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
 const ProfilePage = () => {
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<LoginFormData>({
     name: "",
     email: "",
     password: "",

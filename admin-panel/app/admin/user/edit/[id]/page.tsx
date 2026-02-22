@@ -4,13 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 
-interface FormData {
-  name: string;
-  email: string;
-  role: string;
-  isVerified: boolean;
-  password: string;
-}
+import type { UserFormData } from "@/types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
@@ -18,7 +12,7 @@ const EditUserPage = () => {
   const router = useRouter();
   const { id } = useParams();
 
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<UserFormData>({
     name: "",
     email: "",
     role: "user",

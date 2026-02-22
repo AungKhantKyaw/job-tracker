@@ -53,10 +53,10 @@ const ProfilePage = () => {
 
       const data = await res.json();
 
-      if (res.status === 401) {
-        window.location.href = "/admin/login";
-        return;
-      }
+      // if (res.status === 401) {
+      //   window.location.href = "/admin/login";
+      //   return;
+      // }
 
       if (!res.ok) throw new Error(data.message || "Update failed.");
 

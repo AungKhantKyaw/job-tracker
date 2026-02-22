@@ -31,10 +31,10 @@ const EditUserPage = () => {
           credentials: "include",
         });
 
-        if (res.status === 401) {
-          router.push("/admin/login");
-          return;
-        }
+        // if (res.status === 401) {
+        //   router.push("/admin/login");
+        //   return;
+        // }
 
         if (res.status === 403) {
           setMessage({ type: "error", text: "You don't have permission to edit users." });
@@ -92,7 +92,7 @@ const EditUserPage = () => {
 
       const data = await res.json();
 
-      if (res.status === 401) { router.push("/admin/login"); return; }
+      //if (res.status === 401) { router.push("/admin/login"); return; }
 
       if (!res.ok) {
         throw new Error(data.message || "Update failed.");

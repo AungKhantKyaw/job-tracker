@@ -26,10 +26,10 @@ const StatusPage = () => {
     try {
       const res = await authFetch(`${BASE_URL}/status`);
 
-      if (res.status === 401) {
-        window.location.href = "/admin/login";
-        return;
-      }
+      // if (res.status === 401) {
+      //   window.location.href = "/admin/login";
+      //   return;
+      // }
       if (!res.ok) throw new Error("Failed to load statuses.");
 
       setStatusData(await res.json());

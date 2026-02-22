@@ -24,7 +24,7 @@ const UserListPage = () => {
       });
 
       if (response.status === 401) {       
-        window.location.href = "/admin/login";
+        window.location.href = "/login";
         return;
       }
 

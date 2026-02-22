@@ -52,7 +52,7 @@ const EditJobPage = ({ params: paramsPromise }: EditProps) => {
         ]);
 
         if (jobRes.status === 401 || statusRes.status === 401) {
-          router.push("/admin/login");
+          router.push("/login");
           return;
         }
 
@@ -109,10 +109,10 @@ const EditJobPage = ({ params: paramsPromise }: EditProps) => {
 
       const data = await res.json();
 
-      if (res.status === 401) {
-        router.push("/admin/login");
-        return;
-      }
+      // if (res.status === 401) {
+      //   router.push("/admin/login");
+      //   return;
+      // }
       if (!res.ok)
         throw new Error(data.message || "Failed to update job application.");
 

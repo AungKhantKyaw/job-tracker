@@ -6,7 +6,7 @@
 export interface Status {
   _id: string;
   label: string;
-  color: string; // remove optional — your model requires it and UI always needs it
+  color: string;
   createdAt?: string;
 }
 
@@ -29,7 +29,6 @@ export interface User {
   createdAt?: string;
 }
 
-// Stored in sessionStorage — only display-safe fields, no token
 export interface SessionUser {
   name: string;
   email: string;
@@ -53,7 +52,7 @@ export interface UserFormData {
 // ─── Job ─────────────────────────────────────────────────────────────────────
 
 export interface StatusHistory {
-  status: Status; // always populated from backend — never a raw string
+  status: Status;
   date: string;
 }
 
@@ -63,7 +62,7 @@ export interface Job {
   role: string;
   location?: string;
   salaryRange?: string;
-  status?: Status; // always an object after .populate("status")
+  status?: Status;
   appliedDate?: string;
   followupDate?: string;
   link?: string;
@@ -83,7 +82,7 @@ export interface JobFormData {
   role: string;
   location: string;
   salaryRange: string;
-  status: string; // ObjectId string — for <select> value binding
+  status: string; 
   appliedDate: string;
   followupDate: string;
   link: string;

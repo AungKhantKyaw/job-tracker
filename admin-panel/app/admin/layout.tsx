@@ -13,7 +13,7 @@ export default function AdminLayout({
   const router = useRouter();
   const pathname = usePathname();
 
-  const isLoginPage = pathname === "/admin/login";
+  const isLoginPage = pathname === "/login";
 
   useEffect(() => {
     if (isLoginPage) {
@@ -28,7 +28,7 @@ export default function AdminLayout({
 
     if (!token) {
       localStorage.clear();
-      router.push("/admin/login");
+      router.push("/login");
       return;
     }
 

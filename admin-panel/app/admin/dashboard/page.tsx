@@ -38,10 +38,10 @@ const AdminDashboard = () => {
           credentials: "include",
         });
 
-        if (res.status === 401) {
-          window.location.href = "/admin/login";
-          return;
-        }
+        // if (res.status === 401) {
+        //   window.location.href = "/admin/login";
+        //   return;
+        // }
 
         const data = await res.json();
         setJobs(Array.isArray(data) ? data : (data.jobs ?? []));

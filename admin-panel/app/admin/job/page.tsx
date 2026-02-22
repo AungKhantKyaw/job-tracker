@@ -31,7 +31,7 @@ const JobPage = () => {
       ]);
 
       if (statusRes.status === 401 || jobRes.status === 401) {
-        window.location.href = "/admin/login";
+        window.location.href = "/login";
         return;
       }
 
@@ -84,10 +84,10 @@ const JobPage = () => {
         credentials: "include",
       });
 
-      if (res.status === 401) {
-        window.location.href = "/admin/login";
-        return;
-      }
+      // if (res.status === 401) {
+      //   window.location.href = "/admin/login";
+      //   return;
+      // }
       if (!res.ok) throw new Error("Delete failed.");
 
       setJobs((prev) => prev.filter((j) => j._id !== id));

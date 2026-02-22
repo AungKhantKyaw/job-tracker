@@ -36,10 +36,10 @@ const AddJobPage = () => {
           credentials: "include",
         });
 
-        if (res.status === 401) {
-          router.push("/admin/login");
-          return;
-        }
+        // if (res.status === 401) {
+        //   router.push("/admin/login");
+        //   return;
+        // }
 
         const data: Status[] = await res.json();
         setStatuses(data);
@@ -85,10 +85,10 @@ const AddJobPage = () => {
 
       const data = await res.json();
 
-      if (res.status === 401) {
-        router.push("/admin/login");
-        return;
-      }
+      // if (res.status === 401) {
+      //   router.push("/admin/login");
+      //   return;
+      // }
       if (!res.ok)
         throw new Error(data.message || "Failed to create job entry.");
 

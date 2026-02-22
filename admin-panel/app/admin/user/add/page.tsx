@@ -40,7 +40,7 @@ const AddUserPage = () => {
 
       const data = await res.json();
 
-      if (res.status === 401) { router.push("/admin/login"); return; }
+      //if (res.status === 401) { router.push("/admin/login"); return; }
       if (!res.ok) throw new Error(data.message || "Failed to create user.");
 
       router.push("/admin/user");

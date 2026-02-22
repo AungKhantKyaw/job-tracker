@@ -12,7 +12,7 @@ const AdminHeader = () => {
   const router = useRouter();
 
   useEffect(() => {
-    // ✅ Read non-sensitive display data from sessionStorage
+    // Read non-sensitive display data from sessionStorage
     // (Token itself stays in httpOnly cookie — never readable by JS)
     try {
       const userJson = sessionStorage.getItem("user");
@@ -22,10 +22,10 @@ const AdminHeader = () => {
         setUserRole(user.role || "user");
       } else {
         // sessionStorage is empty (e.g. after page close) — redirect to login
-        router.push("/admin/login");
+        router.push("/login");
       }
     } catch {
-      router.push("/admin/login");
+      router.push("/login");
     }
   }, [router]);
 
@@ -40,7 +40,7 @@ const AdminHeader = () => {
       // Even if the request fails, clear client state and redirect
     } finally {
       sessionStorage.removeItem("user");
-      router.push("/admin/login");
+      router.push("/login");
     }
   };
 

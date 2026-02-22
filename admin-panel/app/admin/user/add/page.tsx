@@ -19,7 +19,7 @@ const AddUserPage = () => {
   const [error, setError] = useState("");
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
     setError("");
@@ -40,7 +40,6 @@ const AddUserPage = () => {
 
       const data = await res.json();
 
-      //if (res.status === 401) { router.push("/admin/login"); return; }
       if (!res.ok) throw new Error(data.message || "Failed to create user.");
 
       router.push("/admin/user");
@@ -55,22 +54,22 @@ const AddUserPage = () => {
   return (
     <div style={styles.container}>
       <div style={styles.breadcrumb}>
-        <Link href="/admin/user" style={styles.backLink}>← Back to Users</Link>
+        <Link href="/admin/user" style={styles.backLink}>
+          ← Back to Users
+        </Link>
       </div>
 
       <div style={styles.card}>
         <h2 style={styles.title}>Create New User</h2>
         <p style={styles.subtitle}>Add a new member to the system</p>
 
-        {error && (
-          <div style={styles.error}>
-            ✕ {error}
-          </div>
-        )}
+        {error && <div style={styles.error}>✕ {error}</div>}
 
         <form onSubmit={handleSubmit} style={styles.form}>
           <div style={styles.inputGroup}>
-            <label htmlFor="name" style={styles.label}>Full Name</label>
+            <label htmlFor="name" style={styles.label}>
+              Full Name
+            </label>
             <input
               id="name"
               name="name"
@@ -84,7 +83,9 @@ const AddUserPage = () => {
           </div>
 
           <div style={styles.inputGroup}>
-            <label htmlFor="email" style={styles.label}>Email Address</label>
+            <label htmlFor="email" style={styles.label}>
+              Email Address
+            </label>
             <input
               id="email"
               name="email"
@@ -98,7 +99,9 @@ const AddUserPage = () => {
           </div>
 
           <div style={styles.inputGroup}>
-            <label htmlFor="password" style={styles.label}>Initial Password</label>
+            <label htmlFor="password" style={styles.label}>
+              Initial Password
+            </label>
             <input
               id="password"
               name="password"
@@ -113,7 +116,9 @@ const AddUserPage = () => {
           </div>
 
           <div style={styles.inputGroup}>
-            <label htmlFor="role" style={styles.label}>Account Role</label>
+            <label htmlFor="role" style={styles.label}>
+              Account Role
+            </label>
             <select
               id="role"
               name="role"
@@ -125,7 +130,9 @@ const AddUserPage = () => {
               <option value="editor">Editor</option>
               <option value="admin">Administrator</option>
             </select>
-            <p style={styles.helpText}>Admins can manage jobs and other users.</p>
+            <p style={styles.helpText}>
+              Admins can manage jobs and other users.
+            </p>
           </div>
 
           <div style={styles.actions}>
@@ -164,7 +171,12 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderRadius: "16px",
     boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
   },
-  title: { fontSize: "24px", fontWeight: "700", color: "#111827", margin: "0 0 8px 0" },
+  title: {
+    fontSize: "24px",
+    fontWeight: "700",
+    color: "#111827",
+    margin: "0 0 8px 0",
+  },
   subtitle: { fontSize: "14px", color: "#6b7280", marginBottom: "30px" },
   error: {
     padding: "12px 16px",
@@ -198,7 +210,12 @@ const styles: { [key: string]: React.CSSProperties } = {
     boxSizing: "border-box",
   },
   helpText: { fontSize: "12px", color: "#9ca3af", marginTop: "4px" },
-  actions: { display: "flex", justifyContent: "flex-end", gap: "12px", marginTop: "10px" },
+  actions: {
+    display: "flex",
+    justifyContent: "flex-end",
+    gap: "12px",
+    marginTop: "10px",
+  },
   cancelBtn: {
     padding: "12px 20px",
     borderRadius: "8px",

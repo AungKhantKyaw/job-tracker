@@ -48,7 +48,7 @@ export default function RegisterPage() {
     setIsLoading(true);
     try {
       // Step 1: Register
-      const res = await fetch(`${BASE_URL}/api/user/register`, {
+      const res = await fetch(`${BASE_URL}/user/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -62,7 +62,7 @@ export default function RegisterPage() {
       if (!res.ok) throw new Error(data.message || "Registration failed.");
 
       // Step 2: Auto-login after registration
-      const loginRes = await fetch(`${BASE_URL}/api/user/login`, {
+      const loginRes = await fetch(`${BASE_URL}/user/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

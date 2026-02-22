@@ -1,17 +1,51 @@
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  name: { type: String },
+  name: { 
+    type: String, 
+    required: true, 
+    trim: true 
+  },
+  email: { 
+    type: String, 
+    required: true, 
+    unique: true, 
+    lowercase: true 
+  },
+  password: { 
+    type: String, 
+    required: true, 
+    select: false
+  },
   role: {
     type: String,
     enum: ["user", "admin"],
     default: "user",
   },
-  isVerified: { type: Boolean, default: false },
-  verificationToken: { type: String },
-  createdAt: { type: Date, default: Date.now },
+  // Verification Fields
+  isVerified: { 
+    type: Boolean, 
+    default: false 
+  },
+  emailVerifyToken: { 
+    type: String, 
+    select: false 
+  },
+  emailVerifyExpires: { 
+    type: Date, 
+    select: false 
+  },
+  // Password Reset Fields
+  resetPasswordToken: { 
+    type: String, 
+    select: false 
+  },
+  resetPasswordExpires: { 
+    type: Date, 
+    select: false 
+  },
+}, { 
+  timestamps: true // Automatically adds createdAt and updatedAt
 });
 
 module.exports = mongoose.model("User", userSchema);

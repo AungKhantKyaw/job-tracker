@@ -11,17 +11,14 @@ const AdminHeader = () => {
   const [userRole, setUserRole] = useState("");
   const router = useRouter();
 
-  useEffect(() => {
-    // Read non-sensitive display data from sessionStorage
-    // (Token itself stays in httpOnly cookie — never readable by JS)
+  useEffect(() => {    
     try {
       const userJson = sessionStorage.getItem("user");
       if (userJson) {
         const user = JSON.parse(userJson);
         setUserName(user.name || "User");
         setUserRole(user.role || "user");
-      } else {
-        // sessionStorage is empty (e.g. after page close) — redirect to login
+      } else {       
         router.push("/login");
       }
     } catch {
@@ -30,14 +27,13 @@ const AdminHeader = () => {
   }, [router]);
 
   const handleLogout = async () => {
-    try {
-      // Tell the server to clear the httpOnly cookie
+    try {     
       await fetch(`${BASE_URL}/user/logout`, {
         method: "POST",
         credentials: "include",
       });
     } catch {
-      // Even if the request fails, clear client state and redirect
+      // Even if logout API call fails, we still want to clear session and redirect to login
     } finally {
       sessionStorage.removeItem("user");
       router.push("/login");

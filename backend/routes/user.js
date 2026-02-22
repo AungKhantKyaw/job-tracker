@@ -4,6 +4,9 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { protect, admin } = require("../middleware/auth");
+const { sendEmail, verifyEmailTemplate } = require("../utils/sendEmail");
+const crypto = require("crypto");
+const hashToken = (t) => crypto.createHash("sha256").update(t).digest("hex");
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -62,6 +65,18 @@ router.post("/register", async (req, res) => {
       role: "user",
     });
 
+    const rawToken = crypto.randomBytes(32).toString("hex");
+    newUser.emailVerifyToken = hashToken(rawToken);
+    newUser.emailVerifyExpires = Date.now() + 24 * 60 * 60 * 1000;
+    await newUser.save();
+
+    const verifyUrl = `${process.env.CLIENT_URL}/verify-email?token=${rawToken}`;
+    await sendEmail({
+      to: newUser.email,
+      subject: "Verify your JobTracker email",
+      html: verifyEmailTemplate(newUser.name, verifyUrl),
+    });
+
     return res.status(201).json({
       id: newUser._id,
       name: newUser.name,
@@ -78,39 +93,44 @@ router.post("/register", async (req, res) => {
 // POST /user/login
 router.post("/login", async (req, res) => {
   try {
-    const { email, password } = sanitizeBody(req.body);
+    const { email, password } = req.body;
 
     if (!email || !password)
       return res
         .status(400)
         .json({ message: "Email and password are required." });
 
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const user = await User.findOne({ email: email.toLowerCase() }).select(
+      "+password",
+    );
 
-    const dummyHash =
-      "$2a$12$invalidsaltxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
-    const isMatch = user
-      ? await bcrypt.compare(password, user.password)
-      : await bcrypt.compare(password, dummyHash);
-
-    if (!user || !isMatch)
+    if (!user)
       return res.status(401).json({ message: "Invalid email or password." });
 
-    const secret = process.env.JWT_SECRET;
-    if (!secret) throw new Error("JWT_SECRET environment variable is not set.");
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch)
+      return res.status(401).json({ message: "Invalid email or password." });
 
-    const token = jwt.sign({ id: user._id, role: user.role }, secret, {
-      expiresIn: "1d",
+    if (!user.isVerified) {
+      return res.status(403).json({
+        message: "Please verify your email before logging in.",
+        code: "EMAIL_NOT_VERIFIED",
+        email: user.email,
+      });
+    }
+
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
     });
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // HTTPS only in prod
+      secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      maxAge: 24 * 60 * 60 * 1000, // 1 day in ms
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    return res.json({
+    res.json({
       user: {
         id: user._id,
         name: user.name,
@@ -119,7 +139,8 @@ router.post("/login", async (req, res) => {
       },
     });
   } catch (err) {
-    return serverError(res, err);
+    console.error("Login error:", err);
+    res.status(500).json({ message: "Login failed. Please try again." });
   }
 });
 

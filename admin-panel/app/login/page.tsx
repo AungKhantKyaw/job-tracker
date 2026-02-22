@@ -6,9 +6,10 @@ import Link from "next/link";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
-const ROLE_REDIRECTS = {
-  admin:  "/admin/dashboard",
-  user:   "/dashboard",
+const ROLE_REDIRECTS: Record<string, string> = {
+  admin: "/admin/dashboard",
+  editor: "/admin/dashboard",
+  user: "/dashboard",
 };
 
 const validateEmail = (email: string) =>
@@ -24,6 +25,10 @@ export default function LoginPage() {
   const [failCount, setFailCount] = useState(0);
   const [cooldown, setCooldown] = useState(false);
 
+  const [unverifiedEmail, setUnverifiedEmail] = useState("");
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState(false);
+
   const router = useRouter();
 
   const startCooldown = () => {
@@ -34,6 +39,8 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setUnverifiedEmail("");
+    setResendSuccess(false);
 
     if (!validateEmail(email)) {
       setError("Please enter a valid email address.");
@@ -58,10 +65,16 @@ export default function LoginPage() {
       });
 
       const data = await response.json();
+
+      // ✅ Handle unverified email specifically
+      if (response.status === 403 && data.code === "EMAIL_NOT_VERIFIED") {
+        setUnverifiedEmail(data.email || email);
+        return;
+      }
+
       if (!response.ok)
         throw new Error(data.message || "Invalid email or password.");
 
-      // Save display data to sessionStorage
       sessionStorage.setItem(
         "user",
         JSON.stringify({
@@ -71,9 +84,8 @@ export default function LoginPage() {
         }),
       );
 
-      // ✅ Redirect to where they came from, or role-based default
       const from = new URLSearchParams(window.location.search).get("from");
-      const fallback = ROLE_REDIRECTS[data.user.role] || "/admin/dashboard";
+      const fallback = ROLE_REDIRECTS[data.user.role] || "/dashboard";
       router.push(from || fallback);
     } catch (err: any) {
       const newFailCount = failCount + 1;
@@ -85,181 +97,268 @@ export default function LoginPage() {
     }
   };
 
+  const handleResend = async () => {
+    setResendLoading(true);
+    setResendSuccess(false);
+    try {
+      await fetch(`${BASE_URL}/auth/send-verification`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: unverifiedEmail }),
+      });
+      setResendSuccess(true);
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
   const isDisabled = isLoading || cooldown;
 
   return (
     <div style={styles.pageWrapper}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap');
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(12px); }
           to   { opacity: 1; transform: translateY(0); }
         }
+        @keyframes slideIn {
+          from { opacity: 0; transform: translateY(-8px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
         .input-field:focus { border-color: #6366f1 !important; outline: none; }
         .eye-btn:hover { color: #94a3b8 !important; }
+        .resend-btn:hover { background: #1d4ed8 !important; }
       `}</style>
 
       <div style={styles.bgGrid} aria-hidden="true" />
       <div style={styles.blobBlue} aria-hidden="true" />
 
-      {/* Back to landing */}
       <Link href="/" style={styles.backLink}>
         ← Back to home
       </Link>
 
       <div style={styles.loginCard}>
-        <div style={styles.headerArea}>
-          <div style={styles.iconWrapper} aria-hidden="true">
-            <svg
-              width="26"
-              height="26"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-            </svg>
-          </div>
-          <h1 style={styles.title}>Welcome back</h1>
-          <p style={styles.subtitle}>Sign in to your JobTracker account</p>
-        </div>
-
-        {error && (
-          <div role="alert" style={styles.errorBox}>
-            <svg
-              width="15"
-              height="15"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              style={{ flexShrink: 0 }}
-            >
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="8" x2="12" y2="12" />
-              <line x1="12" y1="16" x2="12.01" y2="16" />
-            </svg>
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleLogin} style={styles.form} noValidate>
-          <div style={styles.inputGroup}>
-            <label htmlFor="email" style={styles.label}>
-              Email Address
-            </label>
-            <input
-              id="email"
-              type="email"
-              placeholder="jane@example.com"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                setError("");
-              }}
-              required
-              autoComplete="email"
-              className="input-field"
-              style={styles.input}
-            />
-          </div>
-
-          <div style={styles.inputGroup}>
-            <label htmlFor="password" style={styles.label}>
-              Password
-            </label>
-            <div style={styles.passwordWrapper}>
-              <input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="Min. 8 characters"
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  setError("");
-                }}
-                required
-                autoComplete="current-password"
-                className="input-field"
-                style={{ ...styles.input, paddingRight: "48px" }}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword((v) => !v)}
-                className="eye-btn"
-                style={styles.eyeButton}
-                aria-label={showPassword ? "Hide password" : "Show password"}
+        {/* ── Unverified email banner ── */}
+        {unverifiedEmail ? (
+          <div style={styles.verifyBanner}>
+            <div style={styles.verifyIconWrap}>
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#f59e0b"
+                strokeWidth="2"
               >
-                {showPassword ? (
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                <polyline points="22,6 12,13 2,6" />
+              </svg>
+            </div>
+            <h2 style={styles.verifyTitle}>Verify your email</h2>
+            <p style={styles.verifySub}>
+              We sent a verification link to{" "}
+              <strong style={{ color: "#e2e8f0" }}>{unverifiedEmail}</strong>.
+              Please check your inbox and click the link to activate your
+              account.
+            </p>
+
+            {resendSuccess ? (
+              <div style={styles.resendSuccess}>
+                ✓ New verification email sent — check your inbox.
+              </div>
+            ) : (
+              <button
+                onClick={handleResend}
+                disabled={resendLoading}
+                className="resend-btn"
+                style={{
+                  ...styles.resendBtn,
+                  opacity: resendLoading ? 0.7 : 1,
+                }}
+              >
+                {resendLoading ? "Sending…" : "Resend verification email"}
+              </button>
+            )}
+
+            <button
+              onClick={() => {
+                setUnverifiedEmail("");
+                setResendSuccess(false);
+              }}
+              style={styles.backToLogin}
+            >
+              ← Try a different account
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* ── Normal login form ── */}
+            <div style={styles.headerArea}>
+              <div style={styles.iconWrapper} aria-hidden="true">
+                <svg
+                  width="26"
+                  height="26"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+              </div>
+              <h1 style={styles.title}>Welcome back</h1>
+              <p style={styles.subtitle}>Sign in to your JobTracker account</p>
+            </div>
+
+            {error && (
+              <div role="alert" style={styles.errorBox}>
+                <svg
+                  width="15"
+                  height="15"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  style={{ flexShrink: 0 }}
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleLogin} style={styles.form} noValidate>
+              <div style={styles.inputGroup}>
+                <label htmlFor="email" style={styles.label}>
+                  Email Address
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  placeholder="jane@example.com"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setError("");
+                  }}
+                  required
+                  autoComplete="email"
+                  className="input-field"
+                  style={styles.input}
+                />
+              </div>
+
+              <div style={styles.inputGroup}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <label htmlFor="password" style={styles.label}>
+                    Password
+                  </label>
+                  <Link href="/forgot-password" style={styles.forgotLink}>
+                    Forgot password?
+                  </Link>
+                </div>
+                <div style={styles.passwordWrapper}>
+                  <input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Min. 8 characters"
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setError("");
+                    }}
+                    required
+                    autoComplete="current-password"
+                    className="input-field"
+                    style={{ ...styles.input, paddingRight: "48px" }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    className="eye-btn"
+                    style={styles.eyeButton}
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
                   >
-                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
-                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
-                    <line x1="1" y1="1" x2="23" y2="23" />
-                  </svg>
+                    {showPassword ? (
+                      <svg
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                        <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                        <line x1="1" y1="1" x2="23" y2="23" />
+                      </svg>
+                    ) : (
+                      <svg
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isDisabled}
+                style={{
+                  ...styles.button,
+                  ...(isDisabled ? styles.buttonDisabled : {}),
+                }}
+              >
+                {isLoading ? (
+                  <>
+                    <span style={styles.spinner} aria-hidden="true" />
+                    Signing in…
+                  </>
+                ) : cooldown ? (
+                  "Too many attempts — wait 15s"
                 ) : (
-                  <svg
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                    <circle cx="12" cy="12" r="3" />
-                  </svg>
+                  "Sign In"
                 )}
               </button>
+            </form>
+
+            <div style={styles.footer}>
+              <p style={styles.footerText}>
+                Don&apos;t have an account?{" "}
+                <Link href="/register" style={styles.footerLink}>
+                  Sign up free
+                </Link>
+              </p>
             </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={isDisabled}
-            style={{
-              ...styles.button,
-              ...(isDisabled ? styles.buttonDisabled : {}),
-            }}
-          >
-            {isLoading ? (
-              <>
-                <span style={styles.spinner} aria-hidden="true" />
-                Signing in…
-              </>
-            ) : cooldown ? (
-              "Too many attempts — wait 15s"
-            ) : (
-              "Sign In"
-            )}
-          </button>
-        </form>
-
-        <div style={styles.footer}>
-          <p style={styles.footerText}>
-            Don&apos;t have an account?{" "}
-            <Link href="/register" style={styles.footerLink}>
-              Sign up free
-            </Link>
-          </p>
-        </div>
+          </>
+        )}
       </div>
     </div>
   );
@@ -304,7 +403,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     color: "#475569",
     textDecoration: "none",
     zIndex: 10,
-    transition: "color 0.2s",
   },
   loginCard: {
     position: "relative",
@@ -317,6 +415,76 @@ const styles: { [key: string]: React.CSSProperties } = {
     boxShadow: "0 24px 64px rgba(0,0,0,0.5)",
     animation: "fadeIn 0.4s ease both",
   },
+
+  // ── Verify banner
+  verifyBanner: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    textAlign: "center",
+    animation: "slideIn 0.3s ease both",
+  },
+  verifyIconWrap: {
+    width: 60,
+    height: 60,
+    borderRadius: "50%",
+    backgroundColor: "rgba(245,158,11,0.12)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 16,
+  },
+  verifyTitle: {
+    fontFamily: '"Instrument Serif", serif',
+    fontSize: 24,
+    fontWeight: 400,
+    color: "#f8fafc",
+    margin: "0 0 10px",
+    letterSpacing: "-0.4px",
+  },
+  verifySub: {
+    fontSize: 14,
+    color: "#64748b",
+    lineHeight: 1.7,
+    margin: "0 0 24px",
+  },
+  resendBtn: {
+    width: "100%",
+    padding: "12px",
+    backgroundColor: "#2563eb",
+    color: "#fff",
+    border: "none",
+    borderRadius: 10,
+    fontSize: 14,
+    fontWeight: 600,
+    cursor: "pointer",
+    transition: "background 0.2s",
+    marginBottom: 14,
+  },
+  resendSuccess: {
+    fontSize: 13,
+    color: "#4ade80",
+    fontWeight: 500,
+    marginBottom: 16,
+    padding: "10px 14px",
+    backgroundColor: "rgba(74,222,128,0.08)",
+    borderRadius: 8,
+    border: "1px solid rgba(74,222,128,0.2)",
+    width: "100%",
+    textAlign: "center",
+    boxSizing: "border-box",
+  },
+  backToLogin: {
+    background: "none",
+    border: "none",
+    cursor: "pointer",
+    fontSize: 13,
+    color: "#475569",
+    textDecoration: "none",
+    marginTop: 4,
+  },
+
+  // ── Login form
   headerArea: { textAlign: "center", marginBottom: "32px" },
   iconWrapper: {
     display: "inline-flex",
@@ -357,6 +525,12 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontWeight: 600,
     color: "#94a3b8",
     letterSpacing: "0.03em",
+  },
+  forgotLink: {
+    fontSize: "12px",
+    color: "#6366f1",
+    textDecoration: "none",
+    fontWeight: 500,
   },
   passwordWrapper: { position: "relative" },
   input: {

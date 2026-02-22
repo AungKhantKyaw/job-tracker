@@ -31,7 +31,7 @@ const AdminHeader = () => {
 
   const handleLogout = async () => {
     try {
-      // ✅ Tell the server to clear the httpOnly cookie
+      // Tell the server to clear the httpOnly cookie
       await fetch(`${BASE_URL}/user/logout`, {
         method: "POST",
         credentials: "include",

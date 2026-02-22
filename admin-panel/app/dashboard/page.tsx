@@ -55,7 +55,7 @@ export default function UserDashboard() {
 
     const fetchJobs = async () => {
       try {
-        const res = await fetch(`${BASE_URL}/api/job?page=1&limit=200`, {
+        const res = await fetch(`${BASE_URL}/job?page=1&limit=200`, {
           credentials: "include",
         });
         if (!res.ok) return;

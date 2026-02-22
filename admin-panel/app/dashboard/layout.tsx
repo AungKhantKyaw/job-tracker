@@ -98,7 +98,7 @@ export default function DashboardLayout({
   const handleLogout = async () => {
     try {
       await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002"}/api/user/logout`,
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002"}/user/logout`,
         {
           method: "POST",
           credentials: "include",

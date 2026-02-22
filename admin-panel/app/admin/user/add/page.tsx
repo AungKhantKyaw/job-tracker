@@ -1,13 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import axios from "axios";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
+interface FormData {
+  name: string;
+  email: string;
+  password: string;
+  role: string;
+}
+
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
+
 const AddUserPage = () => {
   const router = useRouter();
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: "",
     email: "",
     password: "",
@@ -16,7 +24,12 @@ const AddUserPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    setError("");
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,16 +37,22 @@ const AddUserPage = () => {
     setError("");
 
     try {
-      const token = localStorage.getItem("token");
-      // We use the register endpoint, but as an admin
-      await axios.post(`${baseUrl}/user/register`, formData, {
-        headers: { Authorization: `Bearer ${token}` },
+      const res = await fetch(`${BASE_URL}/user/create`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(formData),
       });
 
-      router.push("/admin/user"); // Redirect back to list
+      const data = await res.json();
+
+      if (res.status === 401) { router.push("/admin/login"); return; }
+      if (!res.ok) throw new Error(data.message || "Failed to create user.");
+
+      router.push("/admin/user");
       router.refresh();
     } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to create user");
+      setError(err.message || "Failed to create user.");
     } finally {
       setLoading(false);
     }
@@ -42,75 +61,77 @@ const AddUserPage = () => {
   return (
     <div style={styles.container}>
       <div style={styles.breadcrumb}>
-        <Link href="/admin/user" style={styles.backLink}>
-          ← Back to Users
-        </Link>
+        <Link href="/admin/user" style={styles.backLink}>← Back to Users</Link>
       </div>
 
       <div style={styles.card}>
         <h2 style={styles.title}>Create New User</h2>
         <p style={styles.subtitle}>Add a new member to the system</p>
 
-        {error && <div style={styles.error}>{error}</div>}
+        {error && (
+          <div style={styles.error}>
+            ✕ {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} style={styles.form}>
           <div style={styles.inputGroup}>
-            <label style={styles.label}>Full Name</label>
+            <label htmlFor="name" style={styles.label}>Full Name</label>
             <input
+              id="name"
+              name="name"
               type="text"
               required
               placeholder="John Doe"
               value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
+              onChange={handleChange}
               style={styles.input}
             />
           </div>
 
           <div style={styles.inputGroup}>
-            <label style={styles.label}>Email Address</label>
+            <label htmlFor="email" style={styles.label}>Email Address</label>
             <input
+              id="email"
+              name="email"
               type="email"
               required
               placeholder="john@example.com"
               value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
+              onChange={handleChange}
               style={styles.input}
             />
           </div>
 
           <div style={styles.inputGroup}>
-            <label style={styles.label}>Initial Password</label>
+            <label htmlFor="password" style={styles.label}>Initial Password</label>
             <input
+              id="password"
+              name="password"
               type="password"
               required
-              placeholder="••••••••"
+              placeholder="Min. 8 characters"
               value={formData.password}
-              onChange={(e) =>
-                setFormData({ ...formData, password: e.target.value })
-              }
+              onChange={handleChange}
+              autoComplete="new-password"
               style={styles.input}
             />
           </div>
 
           <div style={styles.inputGroup}>
-            <label style={styles.label}>Account Role</label>
+            <label htmlFor="role" style={styles.label}>Account Role</label>
             <select
+              id="role"
+              name="role"
               value={formData.role}
-              onChange={(e) =>
-                setFormData({ ...formData, role: e.target.value })
-              }
+              onChange={handleChange}
               style={styles.select}
             >
               <option value="user">Standard User</option>
+              <option value="editor">Editor</option>
               <option value="admin">Administrator</option>
             </select>
-            <p style={styles.helpText}>
-              Admins can manage jobs and other users.
-            </p>
+            <p style={styles.helpText}>Admins can manage jobs and other users.</p>
           </div>
 
           <div style={styles.actions}>
@@ -121,8 +142,16 @@ const AddUserPage = () => {
             >
               Cancel
             </button>
-            <button type="submit" disabled={loading} style={styles.submitBtn}>
-              {loading ? "Creating..." : "Create User"}
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                ...styles.submitBtn,
+                opacity: loading ? 0.7 : 1,
+                cursor: loading ? "not-allowed" : "pointer",
+              }}
+            >
+              {loading ? "Creating…" : "Create User"}
             </button>
           </div>
         </form>
@@ -141,13 +170,18 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderRadius: "16px",
     boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
   },
-  title: {
-    fontSize: "24px",
-    fontWeight: "700",
-    color: "#111827",
-    margin: "0 0 8px 0",
-  },
+  title: { fontSize: "24px", fontWeight: "700", color: "#111827", margin: "0 0 8px 0" },
   subtitle: { fontSize: "14px", color: "#6b7280", marginBottom: "30px" },
+  error: {
+    padding: "12px 16px",
+    backgroundColor: "#fee2e2",
+    color: "#b91c1c",
+    borderRadius: "8px",
+    marginBottom: "20px",
+    fontSize: "14px",
+    border: "1px solid #fecaca",
+    fontWeight: "500",
+  },
   form: { display: "flex", flexDirection: "column", gap: "20px" },
   inputGroup: { display: "flex", flexDirection: "column", gap: "8px" },
   label: { fontSize: "14px", fontWeight: "600", color: "#374151" },
@@ -156,6 +190,9 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderRadius: "8px",
     border: "1px solid #d1d5db",
     fontSize: "15px",
+    outline: "none",
+    width: "100%",
+    boxSizing: "border-box",
   },
   select: {
     padding: "12px",
@@ -163,14 +200,11 @@ const styles: { [key: string]: React.CSSProperties } = {
     border: "1px solid #d1d5db",
     fontSize: "15px",
     backgroundColor: "#fff",
+    width: "100%",
+    boxSizing: "border-box",
   },
   helpText: { fontSize: "12px", color: "#9ca3af", marginTop: "4px" },
-  actions: {
-    display: "flex",
-    justifyContent: "flex-end",
-    gap: "12px",
-    marginTop: "10px",
-  },
+  actions: { display: "flex", justifyContent: "flex-end", gap: "12px", marginTop: "10px" },
   cancelBtn: {
     padding: "12px 20px",
     borderRadius: "8px",
@@ -178,6 +212,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     backgroundColor: "#fff",
     cursor: "pointer",
     fontWeight: "600",
+    fontSize: "14px",
   },
   submitBtn: {
     padding: "12px 24px",
@@ -185,15 +220,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     border: "none",
     backgroundColor: "#2563eb",
     color: "#fff",
-    cursor: "pointer",
     fontWeight: "600",
-  },
-  error: {
-    padding: "12px",
-    backgroundColor: "#fee2e2",
-    color: "#b91c1c",
-    borderRadius: "8px",
-    marginBottom: "20px",
     fontSize: "14px",
   },
 };

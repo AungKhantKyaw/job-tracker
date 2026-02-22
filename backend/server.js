@@ -1,38 +1,42 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-require('dotenv').config();
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const cookieParser = require("cookie-parser");
+require("dotenv").config();
 
 const app = express();
 
 // Middleware
-app.use(cors({
-  origin: 'http://localhost:3000'
-}));
-
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    credentials: true,
+  }),
+);
+app.use(cookieParser());
 app.use(express.json());
 
-app.get('/', (req, res) => {
-  res.send('Server is up and running!');
+app.get("/", (req, res) => {
+  res.send("Server is up and running!");
 });
 
-
 // Routes
-const jobRoutes = require('./routes/job');
-app.use('/api/job', jobRoutes);
+const jobRoutes = require("./routes/job");
+app.use("/api/job", jobRoutes);
 
-const statusRoutes = require('./routes/status');
-app.use('/api/status', statusRoutes);
+const statusRoutes = require("./routes/status");
+app.use("/api/status", statusRoutes);
 
-const userRoutes = require('./routes/user');
-app.use('/api/user', userRoutes);
+const userRoutes = require("./routes/user");
+app.use("/api/user", userRoutes);
 
 // Connect to MongoDB and start server
-mongoose.connect(process.env.MONGO_URI)
+mongoose
+  .connect(process.env.MONGO_URI)
   .then(() => {
-    console.log('MongoDB connected');
+    console.log("MongoDB connected");
     app.listen(process.env.PORT, () => {
       console.log(`Server running on port ${process.env.PORT}`);
     });
   })
-  .catch(err => console.error(err));
+  .catch((err) => console.error(err));

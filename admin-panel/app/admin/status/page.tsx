@@ -1,35 +1,46 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
+
+interface StatusItem {
+  _id: string;
+  label: string;
+  color: string;
+}
+
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
 const StatusPage = () => {
-  const [statusData, setStatusData] = useState([]);
+  const [statusData, setStatusData] = useState<StatusItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  // States for Adding
+  // Add form
   const [newLabel, setNewLabel] = useState("");
   const [newColor, setNewColor] = useState("#3182ce");
 
-  // States for Editing
-  const [editingId, setEditingId] = useState(null);
+  // Edit form
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [editLabel, setEditLabel] = useState("");
   const [editColor, setEditColor] = useState("#3182ce");
 
-  const [error, setError] = useState("");
-
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
+  const authFetch = (url: string, options: RequestInit = {}) =>
+    fetch(url, { ...options, credentials: "include" });
 
   const fetchStatus = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const response = await axios.get(`${baseUrl}/status`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setStatusData(response.data);
+      const res = await authFetch(`${BASE_URL}/status`);
+
+      if (res.status === 401) {
+        window.location.href = "/admin/login";
+        return;
+      }
+      if (!res.ok) throw new Error("Failed to load statuses.");
+
+      setStatusData(await res.json());
       setError("");
-    } catch (err) {
-      setError("Failed to load statuses.");
+    } catch (err: any) {
+      setError(err.message || "Failed to load statuses.");
     } finally {
       setLoading(false);
     }
@@ -39,58 +50,72 @@ const StatusPage = () => {
     fetchStatus();
   }, []);
 
-  const handleAdd = async (e) => {
+  const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
     try {
-      const token = localStorage.getItem("token");
-      await axios.post(
-        `${baseUrl}/status`,
-        { label: newLabel, color: newColor },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
+      const res = await authFetch(`${BASE_URL}/status`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ label: newLabel, color: newColor }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Error adding status.");
+
       setNewLabel("");
       setNewColor("#3182ce");
       fetchStatus();
-    } catch (err) {
-      setError(err.response?.data?.message || "Error adding status");
+    } catch (err: any) {
+      setError(err.message || "Error adding status.");
     }
   };
 
-  const handleUpdate = async (id) => {
+  const handleUpdate = async (id: string) => {
+    setError("");
     try {
-      const token = localStorage.getItem("token");
-      await axios.put(
-        `${baseUrl}/status/${id}`,
-        { label: editLabel, color: editColor },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
+      const res = await authFetch(`${BASE_URL}/status/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ label: editLabel, color: editColor }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Error updating status.");
+
       setEditingId(null);
       fetchStatus();
-    } catch (err) {
-      setError(err.response?.data?.message || "Error updating status");
+    } catch (err: any) {
+      setError(err.message || "Error updating status.");
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id: string) => {
     if (
       !confirm(
         "Are you sure? This will fail if jobs are currently using this status.",
       )
     )
       return;
+    setError("");
     try {
-      const token = localStorage.getItem("token");
-      await axios.delete(`${baseUrl}/status/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const res = await authFetch(`${BASE_URL}/status/${id}`, {
+        method: "DELETE",
       });
-      fetchStatus();
-    } catch (err) {
-      setError(err.response?.data?.message || "Error deleting status");
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Error deleting status.");
+
+      setStatusData((prev) => prev.filter((s) => s._id !== id));
+    } catch (err: any) {
+      setError(err.message || "Error deleting status.");
     }
+  };
+
+  const startEdit = (item: StatusItem) => {
+    setEditingId(item._id);
+    setEditLabel(item.label);
+    setEditColor(item.color || "#888888");
   };
 
   return (
@@ -101,7 +126,7 @@ const StatusPage = () => {
           Define funnel stages and their visual colors.
         </p>
 
-        {error && <div style={styles.errorBanner}>{error}</div>}
+        {error && <div style={styles.errorBanner}>✕ {error}</div>}
 
         {/* Add Form */}
         <form onSubmit={handleAdd} style={styles.form}>
@@ -116,7 +141,10 @@ const StatusPage = () => {
             type="text"
             placeholder="e.g. Technical Interview"
             value={newLabel}
-            onChange={(e) => setNewLabel(e.target.value)}
+            onChange={(e) => {
+              setNewLabel(e.target.value);
+              setError("");
+            }}
             style={styles.input}
             required
           />
@@ -126,7 +154,9 @@ const StatusPage = () => {
         </form>
 
         {loading ? (
-          <div style={styles.loader}>Loading...</div>
+          <div style={styles.loader}>Loading…</div>
+        ) : statusData.length === 0 ? (
+          <p style={styles.empty}>No statuses yet. Add one above.</p>
         ) : (
           <div style={styles.list}>
             {statusData.map((item) => (
@@ -155,7 +185,7 @@ const StatusPage = () => {
                         onClick={() => setEditingId(null)}
                         style={styles.cancelButton}
                       >
-                        X
+                        ✕
                       </button>
                     </div>
                   </div>
@@ -167,16 +197,12 @@ const StatusPage = () => {
                           ...styles.colorDot,
                           backgroundColor: item.color,
                         }}
-                      ></span>
+                      />
                       <span style={styles.labelText}>{item.label}</span>
                     </div>
                     <div style={styles.buttonGroup}>
                       <button
-                        onClick={() => {
-                          setEditingId(item._id);
-                          setEditLabel(item.label);
-                          setEditColor(item.color || "#888888");
-                        }}
+                        onClick={() => startEdit(item)}
                         style={styles.editButton}
                       >
                         Edit
@@ -199,7 +225,7 @@ const StatusPage = () => {
   );
 };
 
-const styles = {
+const styles: { [key: string]: React.CSSProperties } = {
   container: {
     padding: "40px 20px",
     minHeight: "100vh",
@@ -227,6 +253,8 @@ const styles = {
     borderRadius: "6px",
     marginBottom: "20px",
     border: "1px solid #feb2b2",
+    fontSize: "14px",
+    fontWeight: "500",
   },
   form: {
     display: "flex",
@@ -251,13 +279,14 @@ const styles = {
     borderRadius: "4px",
     cursor: "pointer",
     background: "none",
+    flexShrink: 0,
   },
   input: {
     flex: 1,
     padding: "12px",
     borderRadius: "8px",
     border: "1px solid #e2e8f0",
-    fontSize: "16px",
+    fontSize: "15px",
   },
   inputSmall: {
     padding: "6px 10px",
@@ -276,6 +305,12 @@ const styles = {
     cursor: "pointer",
   },
   list: { display: "flex", flexDirection: "column", gap: "10px" },
+  empty: {
+    textAlign: "center",
+    color: "#a0aec0",
+    fontSize: "14px",
+    padding: "20px 0",
+  },
   listItem: {
     display: "flex",
     justifyContent: "space-between",
@@ -286,7 +321,12 @@ const styles = {
     backgroundColor: "#f8fafc",
   },
   labelContainer: { display: "flex", alignItems: "center", gap: "12px" },
-  colorDot: { width: "12px", height: "12px", borderRadius: "50%" },
+  colorDot: {
+    width: "12px",
+    height: "12px",
+    borderRadius: "50%",
+    flexShrink: 0,
+  },
   labelText: { fontWeight: "500", color: "#2d3748" },
   buttonGroup: { display: "flex", gap: "8px" },
   editRow: { display: "flex", flex: 1, gap: "10px", alignItems: "center" },

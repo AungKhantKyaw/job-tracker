@@ -1,10 +1,17 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import axios from "axios";
+
+interface FormData {
+  name: string;
+  email: string;
+  password: string;
+}
+
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
 const ProfilePage = () => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: "",
     email: "",
     password: "",
@@ -12,35 +19,66 @@ const ProfilePage = () => {
   const [message, setMessage] = useState({ type: "", text: "" });
   const [loading, setLoading] = useState(false);
 
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
-
   useEffect(() => {
-    // Get current user info from localStorage (stored during login)
-    const savedUser = JSON.parse(localStorage.getItem("user") || "{}");
-    setFormData({
-      name: savedUser.name || "",
-      email: savedUser.email || "",
-      password: "",
-    });
+    try {
+      const saved = JSON.parse(sessionStorage.getItem("user") || "{}");
+      setFormData({
+        name: saved.name || "",
+        email: saved.email || "",
+        password: "",
+      });
+    } catch {
+      // sessionStorage empty or malformed — form stays blank
+    }
   }, []);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    setMessage({ type: "", text: "" });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setMessage({ type: "", text: "" });
+
     try {
-      const token = localStorage.getItem("token");
-      const res = await axios.put(`${baseUrl}/user/profile`, formData, {
-        headers: { Authorization: `Bearer ${token}` },
+      const body: Partial<FormData> = {
+        name: formData.name,
+        email: formData.email,
+      };
+      if (formData.password) body.password = formData.password;
+
+      const res = await fetch(`${BASE_URL}/user/profile`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(body),
       });
 
-      // Update local storage so the Navbar/UI reflects the new name
-      localStorage.setItem("user", JSON.stringify(res.data));
+      const data = await res.json();
+
+      if (res.status === 401) {
+        window.location.href = "/admin/login";
+        return;
+      }
+
+      if (!res.ok) throw new Error(data.message || "Update failed.");
+
+      const current = JSON.parse(sessionStorage.getItem("user") || "{}");
+      sessionStorage.setItem(
+        "user",
+        JSON.stringify({
+          ...current,
+          name: data.name,
+          email: data.email,
+        }),
+      );
+
+      setFormData((prev) => ({ ...prev, password: "" }));
       setMessage({ type: "success", text: "Profile updated successfully!" });
     } catch (err: any) {
-      setMessage({
-        type: "error",
-        text: err.response?.data?.message || "Update failed",
-      });
+      setMessage({ type: "error", text: err.message || "Update failed." });
     } finally {
       setLoading(false);
     }
@@ -59,54 +97,71 @@ const ProfilePage = () => {
               backgroundColor:
                 message.type === "success" ? "#dcfce7" : "#fee2e2",
               color: message.type === "success" ? "#166534" : "#991b1b",
+              borderColor: message.type === "success" ? "#bbf7d0" : "#fecaca",
             }}
           >
-            {message.text}
+            {message.type === "success" ? "✓" : "✕"} {message.text}
           </div>
         )}
 
         <form onSubmit={handleSubmit} style={styles.form}>
           <div style={styles.inputGroup}>
-            <label style={styles.label}>Full Name</label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
-              style={styles.input}
-            />
-          </div>
-
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Email Address</label>
-            <input
-              type="email"
-              value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
-              style={styles.input}
-            />
-          </div>
-
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>
-              New Password (leave blank to keep current)
+            <label htmlFor="name" style={styles.label}>
+              Full Name
             </label>
             <input
-              type="password"
-              value={formData.password}
-              onChange={(e) =>
-                setFormData({ ...formData, password: e.target.value })
-              }
+              id="name"
+              name="name"
+              type="text"
+              value={formData.name}
+              onChange={handleChange}
+              required
               style={styles.input}
-              placeholder="••••••••"
             />
           </div>
 
-          <button type="submit" disabled={loading} style={styles.button}>
-            {loading ? "Saving..." : "Save Changes"}
+          <div style={styles.inputGroup}>
+            <label htmlFor="email" style={styles.label}>
+              Email Address
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              style={styles.input}
+            />
+          </div>
+
+          <div style={styles.inputGroup}>
+            <label htmlFor="password" style={styles.label}>
+              New Password{" "}
+              <span style={styles.optional}>(leave blank to keep current)</span>
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="Min. 8 characters"
+              autoComplete="new-password"
+              style={styles.input}
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            style={{
+              ...styles.button,
+              opacity: loading ? 0.7 : 1,
+              cursor: loading ? "not-allowed" : "pointer",
+            }}
+          >
+            {loading ? "Saving…" : "Save Changes"}
           </button>
         </form>
       </div>
@@ -129,6 +184,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
     width: "100%",
     maxWidth: "500px",
+    height: "fit-content",
   },
   title: {
     fontSize: "24px",
@@ -140,12 +196,15 @@ const styles: { [key: string]: React.CSSProperties } = {
   form: { display: "flex", flexDirection: "column", gap: "20px" },
   inputGroup: { display: "flex", flexDirection: "column", gap: "8px" },
   label: { fontSize: "14px", fontWeight: "600", color: "#374151" },
+  optional: { fontWeight: "400", color: "#9ca3af" },
   input: {
     padding: "12px",
     borderRadius: "8px",
     border: "1px solid #d1d5db",
     fontSize: "15px",
     outline: "none",
+    width: "100%",
+    boxSizing: "border-box",
   },
   button: {
     padding: "14px",
@@ -154,14 +213,15 @@ const styles: { [key: string]: React.CSSProperties } = {
     border: "none",
     borderRadius: "8px",
     fontWeight: "600",
-    cursor: "pointer",
     marginTop: "10px",
   },
   alert: {
-    padding: "12px",
+    padding: "12px 16px",
     borderRadius: "8px",
     fontSize: "14px",
-    textAlign: "center",
+    marginBottom: "8px",
+    border: "1px solid",
+    fontWeight: "500",
   },
 };
 

@@ -5,54 +5,112 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { protect, admin } = require("../middleware/auth");
 
+// ─── Helpers ────────────────────────────────────────────────────────────────
 
-// POST - Register a new user
+const SALT_ROUNDS = 12;
+
+const hashPassword = (plain) => bcrypt.hash(plain, SALT_ROUNDS);
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/**
+ * Sanitize a plain object by removing any keys whose values are objects
+ * (catches basic NoSQL injection like { email: { $gt: "" } }).
+ */
+const sanitizeBody = (obj) => {
+  const clean = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (typeof v !== "object" || v === null) clean[k] = v;
+  }
+  return clean;
+};
+
+const serverError = (res, err) => {
+  console.error(err);
+  const message =
+    process.env.NODE_ENV === "production"
+      ? "An internal server error occurred."
+      : err.message;
+  return res.status(500).json({ message });
+};
+
+// ─── Register ────────────────────────────────────────────────────────────────
+
+// POST /user/register
 router.post("/register", async (req, res) => {
   try {
-    const { email, password, name, role } = req.body;
-    const existingUser = await User.findOne({ email });
+    const { email, password, name } = sanitizeBody(req.body);
+
+    // Validate required fields
+    if (!name?.trim())
+      return res.status(400).json({ message: "Name is required." });
+    if (!email || !EMAIL_RE.test(email))
+      return res.status(400).json({ message: "A valid email is required." });
+    if (!password || password.length < 8)
+      return res
+        .status(400)
+        .json({ message: "Password must be at least 8 characters." });
+
+    const existingUser = await User.findOne({ email: email.toLowerCase() });
     if (existingUser)
-      return res.status(400).json({ message: "User already exists" });
+      return res.status(409).json({ message: "Email is already registered." });
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    const newUser = new User({
-      email,
-      password: hashedPassword,
-      name,
-      role: role || "user",
+    const newUser = await User.create({
+      email: email.toLowerCase(),
+      password: await hashPassword(password),
+      name: name.trim(),
+      role: "user",
     });
 
-    const savedUser = await newUser.save();
-    const userResponse = savedUser.toObject();
-    delete userResponse.password;
-    res.status(201).json(userResponse);
+    return res.status(201).json({
+      id: newUser._id,
+      name: newUser.name,
+      email: newUser.email,
+      role: newUser.role,
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    return serverError(res, err);
   }
 });
 
-// POST - Login User
+// ─── Login ───────────────────────────────────────────────────────────────────
+
+// POST /user/login
 router.post("/login", async (req, res) => {
   try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    if (!user)
-      return res.status(400).json({ message: "Invalid Email or Password" });
+    const { email, password } = sanitizeBody(req.body);
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch)
-      return res.status(400).json({ message: "Invalid Email or Password" });
+    if (!email || !password)
+      return res
+        .status(400)
+        .json({ message: "Email and password are required." });
 
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET || "secret123",
-      { expiresIn: "1d" },
-    );
+    const user = await User.findOne({ email: email.toLowerCase() });
 
-    res.json({
-      token,
+    const dummyHash =
+      "$2a$12$invalidsaltxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+    const isMatch = user
+      ? await bcrypt.compare(password, user.password)
+      : await bcrypt.compare(password, dummyHash);
+
+    if (!user || !isMatch)
+      return res.status(401).json({ message: "Invalid email or password." });
+
+    const secret = process.env.JWT_SECRET;
+    if (!secret) throw new Error("JWT_SECRET environment variable is not set.");
+
+    const token = jwt.sign({ id: user._id, role: user.role }, secret, {
+      expiresIn: "1d",
+    });
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // HTTPS only in prod
+      sameSite: "strict",
+      maxAge: 24 * 60 * 60 * 1000, // 1 day in ms
+    });
+
+    return res.json({
       user: {
         id: user._id,
         name: user.name,
@@ -61,103 +119,194 @@ router.post("/login", async (req, res) => {
       },
     });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    return serverError(res, err);
   }
 });
 
-// --- PROFILE ROUTE (Protected - User updating own data) ---
-// IMPORTANT: This MUST come before any route with /:id
+// ─── Logout ──────────────────────────────────────────────────────────────────
 
+// POST /user/logout
+router.post("/logout", (_req, res) => {
+  res.clearCookie("token", { httpOnly: true, sameSite: "strict" });
+  return res.json({ message: "Logged out successfully." });
+});
+
+// ─── Profile (self-update) ───────────────────────────────────────────────────
+
+// PUT /user/profile
 router.put("/profile", protect, async (req, res) => {
   try {
+    const { name, email, password } = sanitizeBody(req.body);
     const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: "User not found." });
 
-    if (user) {
-      user.name = req.body.name || user.name;
-      user.email = req.body.email || user.email;
+    if (name) user.name = name.trim();
 
-      if (req.body.password) {
-        const salt = await bcrypt.genSalt(10);
-        user.password = await bcrypt.hash(req.body.password, salt);
-      }
+    if (email) {
+      if (!EMAIL_RE.test(email))
+        return res.status(400).json({ message: "Invalid email format." });
 
-      const updatedUser = await user.save();
-
-      res.json({
-        id: updatedUser._id,
-        name: updatedUser.name,
-        email: updatedUser.email,
-        role: updatedUser.role,
+      const taken = await User.findOne({
+        email: email.toLowerCase(),
+        _id: { $ne: user._id },
       });
-    } else {
-      res.status(404).json({ message: "User not found" });
+      if (taken)
+        return res.status(409).json({ message: "Email is already in use." });
+
+      user.email = email.toLowerCase();
     }
+
+    if (password) {
+      if (password.length < 8)
+        return res
+          .status(400)
+          .json({ message: "Password must be at least 8 characters." });
+      user.password = await hashPassword(password);
+    }
+
+    const updated = await user.save();
+
+    return res.json({
+      id: updated._id,
+      name: updated.name,
+      email: updated.email,
+      role: updated.role,
+    });
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    return serverError(res, err);
   }
 });
 
-// --- CRUD ROUTES (Admin Protected) ---
+// ─── Admin: List Users ───────────────────────────────────────────────────────
 
-// GET - List all users
+// GET /user?page=1&limit=20
 router.get("/", protect, admin, async (req, res) => {
   try {
-    const users = await User.find().select("-password");
-    res.json(users);
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
+    const skip = (page - 1) * limit;
+
+    const [users, total] = await Promise.all([
+      User.find().select("-password").skip(skip).limit(limit).lean(),
+      User.countDocuments(),
+    ]);
+
+    return res.json({
+      users,
+      pagination: { total, page, limit, pages: Math.ceil(total / limit) },
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    return serverError(res, err);
   }
 });
 
-// PUT - Update specific user by ID (Admin only)
+// POST /api/user/create (Admin only)
+router.post("/create", protect, admin, async (req, res) => {
+  try {
+    const { email, password, name, role } = sanitizeBody(req.body);
+    const ALLOWED_ROLES = ["user", "editor", "admin"];
+
+    if (!name?.trim())
+      return res.status(400).json({ message: "Name is required." });
+    if (!email || !EMAIL_RE.test(email))
+      return res.status(400).json({ message: "A valid email is required." });
+    if (!password || password.length < 8)
+      return res
+        .status(400)
+        .json({ message: "Password must be at least 8 characters." });
+
+    const existing = await User.findOne({ email: email.toLowerCase() });
+    if (existing)
+      return res.status(409).json({ message: "Email is already registered." });
+
+    const newUser = await User.create({
+      email: email.toLowerCase(),
+      password: await hashPassword(password),
+      name: name.trim(),
+      role: ALLOWED_ROLES.includes(role) ? role : "user",
+    });
+
+    return res.status(201).json({
+      id: newUser._id,
+      name: newUser.name,
+      email: newUser.email,
+      role: newUser.role,
+    });
+  } catch (err) {
+    return serverError(res, err);
+  }
+});
+
+// GET /api/user/:id (Admin only)
+router.get("/:id", protect, admin, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select("-password");
+    if (!user) return res.status(404).json({ message: "User not found." });
+    return res.json(user);
+  } catch (err) {
+    return serverError(res, err);
+  }
+});
+
+// ─── Admin: Update User ───────────────────────────────────────────────────────
+
+// PUT /user/:id
 router.put("/:id", protect, admin, async (req, res) => {
   try {
-    const { name, email, role, isVerified, password } = req.body;
+    const { name, email, role, isVerified, password } = sanitizeBody(req.body);
+    const ALLOWED_ROLES = ["user", "editor", "admin"];
 
-    // Find user first
     const user = await User.findById(req.params.id);
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (!user) return res.status(404).json({ message: "User not found." });
 
-    // Update fields
-    user.name = name || user.name;
-    user.email = email || user.email;
-    user.role = role || user.role;
+    if (name) user.name = name.trim();
 
-    // Manually set verification status
-    if (typeof isVerified !== "undefined") {
-      user.isVerified = isVerified;
+    if (email) {
+      if (!EMAIL_RE.test(email))
+        return res.status(400).json({ message: "Invalid email format." });
+      user.email = email.toLowerCase();
     }
 
-    // If admin provided a new password in the edit form
+    // ✅ Validate role against an allowlist
+    if (role) {
+      if (!ALLOWED_ROLES.includes(role))
+        return res.status(400).json({ message: "Invalid role value." });
+      user.role = role;
+    }
+
+    if (typeof isVerified === "boolean") user.isVerified = isVerified;
+
     if (password) {
-      const salt = await bcrypt.genSalt(10);
-      user.password = await bcrypt.hash(password, salt);
+      if (password.length < 8)
+        return res
+          .status(400)
+          .json({ message: "Password must be at least 8 characters." });
+      user.password = await hashPassword(password);
     }
 
     await user.save();
-
-    res.json({ message: "User updated successfully" });
+    return res.json({ message: "User updated successfully." });
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    return serverError(res, err);
   }
 });
 
-// DELETE - Remove user (Admin only)
+// ─── Admin: Delete User ───────────────────────────────────────────────────────
+
+// DELETE /user/:id
 router.delete("/:id", protect, admin, async (req, res) => {
   try {
-    if (req.user.id === req.params.id) {
+    if (req.user._id.toString() === req.params.id)
       return res
         .status(400)
-        .json({ message: "You cannot delete your own admin account." });
-    }
+        .json({ message: "You cannot delete your own account." });
 
-    const deletedUser = await User.findByIdAndDelete(req.params.id);
-    if (!deletedUser)
-      return res.status(404).json({ message: "User not found" });
+    const deleted = await User.findByIdAndDelete(req.params.id);
+    if (!deleted) return res.status(404).json({ message: "User not found." });
 
-    res.json({ message: "User deleted successfully" });
+    return res.json({ message: "User deleted successfully." });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    return serverError(res, err);
   }
 });
 

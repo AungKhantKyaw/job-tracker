@@ -1,24 +1,58 @@
 "use client";
 
 import { useEffect, useState, use } from "react";
-import axios from "axios";
 import { useRouter } from "next/navigation";
 
 interface EditProps {
   params: Promise<{ id: string }>;
 }
 
+interface Status {
+  _id: string;
+  label: string;
+  color?: string;
+}
+
+interface StatusHistory {
+  status: Status | string;
+  date: string;
+}
+
+interface FormData {
+  company: string;
+  role: string;
+  location: string;
+  salaryRange: string;
+  status: string;
+  appliedDate: string;
+  followupDate: string;
+  link: string;
+  description: string;
+  contactPerson: string;
+  contactEmail: string;
+  contactPhone: string;
+  notes: string;
+  statusHistory: StatusHistory[];
+}
+
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
+
+const formatDate = (dateStr: string | null) => {
+  if (!dateStr) return "";
+  return new Date(dateStr).toISOString().split("T")[0];
+};
+
 const EditJobPage = ({ params: paramsPromise }: EditProps) => {
   const params = use(paramsPromise);
   const id = params.id;
   const router = useRouter();
 
-  const [statuses, setStatuses] = useState<any[]>([]);
+  const [statuses, setStatuses] = useState<Status[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     company: "",
     role: "",
     location: "",
@@ -32,52 +66,54 @@ const EditJobPage = ({ params: paramsPromise }: EditProps) => {
     contactEmail: "",
     contactPhone: "",
     notes: "",
-    statusHistory: [] as any[], // Use an array
+    statusHistory: [],
   });
-
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const headers = { Authorization: `Bearer ${token}` };
-
         const [jobRes, statusRes] = await Promise.all([
-          axios.get(`${baseUrl}/job/${id}`, { headers }),
-          axios.get(`${baseUrl}/status`, { headers }),
+          fetch(`${BASE_URL}/job/${id}`, { credentials: "include" }),
+          fetch(`${BASE_URL}/status`, { credentials: "include" }),
         ]);
 
-        setStatuses(statusRes.data);
+        if (jobRes.status === 401 || statusRes.status === 401) {
+          router.push("/admin/login");
+          return;
+        }
 
-        const job = jobRes.data;
-       
-        const formatDate = (dateStr: string | null) => {
-          if (!dateStr) return "";
-          return new Date(dateStr).toISOString().split("T")[0];
-        };
+        if (!jobRes.ok) throw new Error("Failed to load job.");
+        if (!statusRes.ok) throw new Error("Failed to load statuses.");
 
+        const [job, statusData] = await Promise.all([
+          jobRes.json(),
+          statusRes.json(),
+        ]);
+
+        setStatuses(statusData);
         setFormData({
           ...job,
-          status: job.status?._id || job.status,
+          status: job.status?._id || job.status || "",
           appliedDate: formatDate(job.appliedDate),
           followupDate: formatDate(job.followupDate),
         });
       } catch (err: any) {
-        setError("Failed to load job details.");
+        setError(err.message || "Failed to load job details.");
       } finally {
         setLoading(false);
       }
     };
+
     fetchData();
-  }, [id, baseUrl]);
+  }, [id, router]);
 
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >,
   ) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    setError("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -86,26 +122,38 @@ const EditJobPage = ({ params: paramsPromise }: EditProps) => {
     setError("");
 
     try {
-      const token = localStorage.getItem("token");
-
-      // Clean data for submission: convert empty strings back to null for Dates
-      const submissionData = {
-        ...formData,
-        followupDate: formData.followupDate || null,
-        appliedDate: formData.appliedDate || null,
-      };
-
-      await axios.put(`${baseUrl}/job/${id}`, submissionData, {
-        headers: { Authorization: `Bearer ${token}` },
+      const res = await fetch(`${BASE_URL}/job/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          ...formData,
+          followupDate: formData.followupDate || null,
+          appliedDate: formData.appliedDate || null,
+        }),
       });
+
+      const data = await res.json();
+
+      if (res.status === 401) {
+        router.push("/admin/login");
+        return;
+      }
+      if (!res.ok)
+        throw new Error(data.message || "Failed to update job application.");
+
       router.push("/admin/job");
     } catch (err: any) {
-      setError(
-        err.response?.data?.message || "Failed to update job application.",
-      );
+      setError(err.message || "Failed to update job application.");
     } finally {
       setSaving(false);
     }
+  };
+
+  const getStatusHistoryLabel = (status: StatusHistory["status"]) => {
+    if (!status) return "Unknown Status";
+    if (typeof status === "object") return status.label;
+    return status;
   };
 
   if (loading)
@@ -113,7 +161,7 @@ const EditJobPage = ({ params: paramsPromise }: EditProps) => {
       <div style={styles.page}>
         <div style={styles.card}>
           <p style={{ textAlign: "center", color: "#6b7280" }}>
-            Loading application details...
+            Loading application details…
           </p>
         </div>
       </div>
@@ -123,7 +171,8 @@ const EditJobPage = ({ params: paramsPromise }: EditProps) => {
     <div style={styles.page}>
       <div style={styles.card}>
         <h2 style={styles.title}>Edit Job Application</h2>
-        {error && <div style={styles.errorBox}>{error}</div>}
+
+        {error && <div style={styles.errorBox}>✕ {error}</div>}
 
         <form onSubmit={handleSubmit}>
           {/* General Information */}
@@ -275,19 +324,16 @@ const EditJobPage = ({ params: paramsPromise }: EditProps) => {
             </div>
           </div>
 
+          {/* Timeline */}
           <div style={styles.sectionTitle}>Application Timeline</div>
           <div style={styles.timelineContainer}>
-            {formData.statusHistory && formData.statusHistory.length > 0 ? (
-              formData.statusHistory.map((history: any, index: number) => (
+            {formData.statusHistory?.length > 0 ? (
+              formData.statusHistory.map((history, index) => (
                 <div key={index} style={styles.timelineItem}>
-                  <div style={styles.timelineDot}></div>
+                  <div style={styles.timelineDot} />
                   <div style={styles.timelineContent}>
-                    {/* FIX: Access .label because .status is now an object */}
                     <span style={styles.timelineStatus}>
-                      {history.status?.label ||
-                        (typeof history.status === "string"
-                          ? history.status
-                          : "Unknown Status")}
+                      {getStatusHistoryLabel(history.status)}
                     </span>
                     <span style={styles.timelineDate}>
                       {new Date(history.date).toLocaleDateString(undefined, {
@@ -298,7 +344,7 @@ const EditJobPage = ({ params: paramsPromise }: EditProps) => {
                     </span>
                   </div>
                   {index !== formData.statusHistory.length - 1 && (
-                    <div style={styles.timelineLine}></div>
+                    <div style={styles.timelineLine} />
                   )}
                 </div>
               ))
@@ -309,7 +355,7 @@ const EditJobPage = ({ params: paramsPromise }: EditProps) => {
             )}
           </div>
 
-          {/* Action Buttons */}
+          {/* Actions */}
           <div style={styles.actionArea}>
             <button
               type="button"
@@ -327,7 +373,7 @@ const EditJobPage = ({ params: paramsPromise }: EditProps) => {
                 cursor: saving ? "not-allowed" : "pointer",
               }}
             >
-              {saving ? "Saving Changes..." : "Update Application"}
+              {saving ? "Saving…" : "Update Application"}
             </button>
           </div>
         </form>
@@ -352,6 +398,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderRadius: "16px",
     padding: "40px",
     boxShadow: "0 10px 25px rgba(0,0,0,0.05)",
+    height: "fit-content",
   },
   title: {
     fontSize: "26px",
@@ -386,6 +433,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: "15px",
     outline: "none",
     backgroundColor: "white",
+    boxSizing: "border-box",
   },
   floatingTextarea: {
     width: "100%",
@@ -396,6 +444,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     outline: "none",
     minHeight: "120px",
     resize: "vertical",
+    boxSizing: "border-box",
   },
   floatingLabel: {
     position: "absolute",
@@ -403,20 +452,20 @@ const styles: { [key: string]: React.CSSProperties } = {
     top: "-10px",
     fontSize: "12px",
     fontWeight: "600",
-    color: "#2563eb",
+    color: "#4a4a4a",
     backgroundColor: "#ffffff",
     padding: "0 6px",
     pointerEvents: "none",
-    zIndex: 1,
   },
   textareaContainer: { display: "flex", flexDirection: "column", gap: "24px" },
   errorBox: {
     backgroundColor: "#fee2e2",
     color: "#b91c1c",
-    padding: "12px",
+    padding: "12px 16px",
     borderRadius: "8px",
     marginBottom: "20px",
     border: "1px solid #fecaca",
+    fontWeight: "500",
   },
   actionArea: {
     display: "flex",
@@ -431,8 +480,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     border: "none",
     borderRadius: "10px",
     fontWeight: "600",
-    cursor: "pointer",
-    transition: "all 0.2s",
   },
   cancelBtn: {
     padding: "12px 28px",
@@ -463,6 +510,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderRadius: "50%",
     marginTop: "5px",
     zIndex: 2,
+    flexShrink: 0,
   },
   timelineLine: {
     position: "absolute",
@@ -473,20 +521,9 @@ const styles: { [key: string]: React.CSSProperties } = {
     backgroundColor: "#d1d5db",
     zIndex: 1,
   },
-  timelineContent: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "2px",
-  },
-  timelineStatus: {
-    fontSize: "15px",
-    fontWeight: "600",
-    color: "#111827",
-  },
-  timelineDate: {
-    fontSize: "12px",
-    color: "#6b7280",
-  },
+  timelineContent: { display: "flex", flexDirection: "column", gap: "2px" },
+  timelineStatus: { fontSize: "15px", fontWeight: "600", color: "#111827" },
+  timelineDate: { fontSize: "12px", color: "#6b7280" },
 };
 
 export default EditJobPage;

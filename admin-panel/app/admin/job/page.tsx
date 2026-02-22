@@ -1,42 +1,61 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
 import Link from "next/link";
 
-const Job = () => {
-  const [jobs, setJobs] = useState([]);
-  const [filteredJobs, setFilteredJobs] = useState([]);
-  const [statuses, setStatuses] = useState([]);
+interface Status {
+  _id: string;
+  label: string;
+  color: string;
+}
+
+interface Job {
+  _id: string;
+  company: string;
+  role: string;
+  location?: string;
+  appliedDate: string;
+  status?: Status | string;
+}
+
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
+
+const JobPage = () => {
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
+  const [statuses, setStatuses] = useState<Status[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
-
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const limit = 30;
-
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
   const fetchData = async () => {
     setLoading(true);
+    setError("");
     try {
-      const token = localStorage.getItem("token");
-      const headers = { Authorization: `Bearer ${token}` };
+      const [statusRes, jobRes] = await Promise.all([
+        fetch(`${BASE_URL}/status`, { credentials: "include" }),
+        fetch(`${BASE_URL}/job?page=${page}&limit=${limit}`, {
+          credentials: "include",
+        }),
+      ]);
 
-      const statusRes = await axios.get(`${baseUrl}/status`, { headers });
-      setStatuses(statusRes.data);
+      if (statusRes.status === 401 || jobRes.status === 401) {
+        window.location.href = "/admin/login";
+        return;
+      }
 
-      const jobRes = await axios.get(
-        `${baseUrl}/job?page=${page}&limit=${limit}`,
-        { headers },
-      );
+      const statusData = await statusRes.json();
+      const jobData = await jobRes.json();
 
-      setJobs(jobRes.data.jobs || []);
-      setTotalPages(jobRes.data.totalPages || 1);
-    } catch (err) {
+      setStatuses(statusData);
+      setJobs(jobData.jobs ?? []);
+      setTotalPages(jobData.totalPages ?? 1);
+    } catch {
       setError("Failed to fetch data. Check if backend is running.");
     } finally {
       setLoading(false);
@@ -52,43 +71,58 @@ const Job = () => {
 
     if (statusFilter !== "All") {
       result = result.filter((job) => {
-        const currentLabel = job.status?.label || job.status;
-        return currentLabel === statusFilter;
+        const label =
+          typeof job.status === "object" ? job.status?.label : job.status;
+        return label === statusFilter;
       });
     }
 
     if (searchTerm) {
+      const term = searchTerm.toLowerCase();
       result = result.filter(
         (job) =>
-          job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          job.role.toLowerCase().includes(searchTerm.toLowerCase()),
+          job.company.toLowerCase().includes(term) ||
+          job.role.toLowerCase().includes(term),
       );
     }
 
     setFilteredJobs(result);
   }, [searchTerm, statusFilter, jobs]);
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id: string) => {
     if (!confirm("Delete this application?")) return;
+    setDeletingId(id);
     try {
-      const token = localStorage.getItem("token");
-      await axios.delete(`${baseUrl}/job/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const res = await fetch(`${BASE_URL}/job/${id}`, {
+        method: "DELETE",
+        credentials: "include",
       });
-      fetchData();
-    } catch (err) {
+
+      if (res.status === 401) {
+        window.location.href = "/admin/login";
+        return;
+      }
+      if (!res.ok) throw new Error("Delete failed.");
+
+      setJobs((prev) => prev.filter((j) => j._id !== id));
+    } catch {
       alert("Error deleting job.");
+    } finally {
+      setDeletingId(null);
     }
   };
 
-  const getStatusStyle = (statusObj) => {
-    if (statusObj && typeof statusObj === "object" && statusObj.color) {
-      return {
-        bg: statusObj.color + "20",
-        text: statusObj.color,
-      };
+  const getStatusStyle = (status: Job["status"]) => {
+    if (status && typeof status === "object" && status.color) {
+      return { bg: status.color + "20", text: status.color };
     }
     return { bg: "#f3f4f6", text: "#374151" };
+  };
+
+  const getStatusLabel = (status: Job["status"]) => {
+    if (!status) return "No Status";
+    if (typeof status === "object") return status.label;
+    return status;
   };
 
   return (
@@ -140,13 +174,13 @@ const Job = () => {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan="5" style={styles.tdCenter}>
-                  Loading...
+                <td colSpan={5} style={styles.tdCenter}>
+                  Loading…
                 </td>
               </tr>
             ) : filteredJobs.length === 0 ? (
               <tr>
-                <td colSpan="5" style={styles.tdCenter}>
+                <td colSpan={5} style={styles.tdCenter}>
                   No applications found.
                 </td>
               </tr>
@@ -169,14 +203,7 @@ const Job = () => {
                         border: `1px solid ${getStatusStyle(job.status).text}40`,
                       }}
                     >
-                      {/* This is the fix: 
-                          If it's an object, show the label. 
-                          If it's still a string (old data), show the string.
-                      */}
-                      {job.status?.label ||
-                        (typeof job.status === "string"
-                          ? job.status
-                          : "No Status")}
+                      {getStatusLabel(job.status)}
                     </span>
                   </td>
                   <td style={styles.td}>
@@ -192,9 +219,13 @@ const Job = () => {
                       </Link>
                       <button
                         onClick={() => handleDelete(job._id)}
-                        style={styles.deleteBtn}
+                        disabled={deletingId === job._id}
+                        style={{
+                          ...styles.deleteBtn,
+                          opacity: deletingId === job._id ? 0.5 : 1,
+                        }}
                       >
-                        Delete
+                        {deletingId === job._id ? "Deleting…" : "Delete"}
                       </button>
                     </div>
                   </td>
@@ -204,11 +235,10 @@ const Job = () => {
           </tbody>
         </table>
 
-        {/* PAGINATION CONTROLS */}
         <div style={styles.pagination}>
           <button
             disabled={page === 1}
-            onClick={() => setPage(page - 1)}
+            onClick={() => setPage((p) => p - 1)}
             style={page === 1 ? styles.pageBtnDisabled : styles.pageBtn}
           >
             Previous
@@ -218,7 +248,7 @@ const Job = () => {
           </span>
           <button
             disabled={page === totalPages}
-            onClick={() => setPage(page + 1)}
+            onClick={() => setPage((p) => p + 1)}
             style={
               page === totalPages ? styles.pageBtnDisabled : styles.pageBtn
             }
@@ -231,7 +261,7 @@ const Job = () => {
   );
 };
 
-const styles = {
+const styles: { [key: string]: React.CSSProperties } = {
   container: {
     padding: "40px 20px",
     maxWidth: "1100px",
@@ -255,8 +285,6 @@ const styles = {
     fontSize: "14px",
     boxShadow: "0 4px 12px rgba(37,99,235,0.2)",
   },
-
-  // Filter Styles
   filterBar: {
     display: "flex",
     gap: "16px",
@@ -271,6 +299,7 @@ const styles = {
     border: "1px solid #d1d5db",
     outline: "none",
     fontSize: "15px",
+    boxSizing: "border-box",
   },
   filterSelect: {
     padding: "12px 16px",
@@ -281,43 +310,6 @@ const styles = {
     backgroundColor: "white",
     cursor: "pointer",
     minWidth: "160px",
-  },
-
-  pagination: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: "20px",
-    gap: "15px",
-    borderTop: "1px solid #f3f4f6",
-  },
-  pageInfo: {
-    fontSize: "14px",
-    color: "#4b5563",
-  },
-  pageBtn: {
-    padding: "8px 16px",
-    borderRadius: "6px",
-    border: "1px solid #d1d5db",
-    backgroundColor: "white",
-    cursor: "pointer",
-    fontWeight: "500",
-    transition: "all 0.2s",
-  },
-  pageBtnDisabled: {
-    padding: "8px 16px",
-    borderRadius: "6px",
-    border: "1px solid #e5e7eb",
-    backgroundColor: "#f9fafb",
-    color: "#9ca3af",
-    cursor: "not-allowed",
-  },
-  editBtnLink: {
-    textDecoration: "none",
-    color: "#2563eb",
-    fontWeight: "600",
-    fontSize: "14px",
-    marginRight: "10px",
   },
   tableWrapper: {
     backgroundColor: "white",
@@ -347,12 +339,21 @@ const styles = {
     fontSize: "12px",
     fontWeight: "700",
   },
+  actionGroup: { display: "flex", gap: "12px", alignItems: "center" },
+  editBtnLink: {
+    textDecoration: "none",
+    color: "#2563eb",
+    fontWeight: "600",
+    fontSize: "14px",
+  },
   deleteBtn: {
     background: "none",
     border: "none",
     color: "#f87171",
     cursor: "pointer",
     fontWeight: "600",
+    fontSize: "14px",
+    padding: 0,
   },
   error: {
     padding: "12px",
@@ -361,6 +362,31 @@ const styles = {
     borderRadius: "10px",
     marginBottom: "20px",
   },
+  pagination: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: "20px",
+    gap: "15px",
+    borderTop: "1px solid #f3f4f6",
+  },
+  pageInfo: { fontSize: "14px", color: "#4b5563" },
+  pageBtn: {
+    padding: "8px 16px",
+    borderRadius: "6px",
+    border: "1px solid #d1d5db",
+    backgroundColor: "white",
+    cursor: "pointer",
+    fontWeight: "500",
+  },
+  pageBtnDisabled: {
+    padding: "8px 16px",
+    borderRadius: "6px",
+    border: "1px solid #e5e7eb",
+    backgroundColor: "#f9fafb",
+    color: "#9ca3af",
+    cursor: "not-allowed",
+  },
 };
 
-export default Job;
+export default JobPage;

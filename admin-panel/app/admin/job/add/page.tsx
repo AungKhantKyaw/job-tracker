@@ -1,16 +1,37 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { useRouter } from "next/navigation";
+
+interface Status {
+  _id: string;
+  label: string;
+}
+
+interface FormData {
+  company: string;
+  role: string;
+  location: string;
+  salaryRange: string;
+  status: string;
+  appliedDate: string;
+  link: string;
+  description: string;
+  contactPerson: string;
+  contactEmail: string;
+  contactPhone: string;
+  notes: string;
+}
+
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
 const AddJobPage = () => {
   const router = useRouter();
-  const [statuses, setStatuses] = useState([]);
+  const [statuses, setStatuses] = useState<Status[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     company: "",
     role: "",
     location: "",
@@ -25,35 +46,44 @@ const AddJobPage = () => {
     notes: "",
   });
 
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
-
   useEffect(() => {
     const fetchStatuses = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const res = await axios.get(`${baseUrl}/status`, {
-          headers: { Authorization: `Bearer ${token}` },
+        const res = await fetch(`${BASE_URL}/status`, {
+          credentials: "include",
         });
-        setStatuses(res.data);
 
-        if (res.data.length > 0) {
-          // CHANGE THIS LINE: use ._id instead of .label
-          setFormData((prev) => ({ ...prev, status: res.data[0]._id }));
+        if (res.status === 401) {
+          router.push("/admin/login");
+          return;
         }
-      } catch (err) {
-        console.error("Could not load statuses");
+
+        const data: Status[] = await res.json();
+        setStatuses(data);
+
+        // Pre-select the first status
+        if (data.length > 0) {
+          setFormData((prev) => ({ ...prev, status: data[0]._id }));
+        }
+      } catch {
+        console.error("Could not load statuses.");
       }
     };
-    fetchStatuses();
-  }, [baseUrl]);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    fetchStatuses();
+  }, [router]);
+
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >,
+  ) => {
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    setError("");
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError("");
 
     if (!formData.status) {
@@ -61,14 +91,27 @@ const AddJobPage = () => {
       return;
     }
 
+    setLoading(true);
     try {
-      const token = localStorage.getItem("token");
-      await axios.post(`${baseUrl}/job`, formData, {
-        headers: { Authorization: `Bearer ${token}` },
+      const res = await fetch(`${BASE_URL}/job`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(formData),
       });
+
+      const data = await res.json();
+
+      if (res.status === 401) {
+        router.push("/admin/login");
+        return;
+      }
+      if (!res.ok)
+        throw new Error(data.message || "Failed to create job entry.");
+
       router.push("/admin/job");
-    } catch (err) {
-      setError(err.response?.data?.message || "Failed to create job entry.");
+    } catch (err: any) {
+      setError(err.message || "Failed to create job entry.");
     } finally {
       setLoading(false);
     }
@@ -79,7 +122,7 @@ const AddJobPage = () => {
       <div style={styles.card}>
         <h2 style={styles.title}>Add New Job Application</h2>
 
-        {error && <div style={styles.errorBox}>{error}</div>}
+        {error && <div style={styles.errorBox}>✕ {error}</div>}
 
         <form onSubmit={handleSubmit} style={styles.form}>
           {/* General Information */}
@@ -95,7 +138,6 @@ const AddJobPage = () => {
               />
               <label style={styles.floatingLabel}>Company *</label>
             </div>
-
             <div style={styles.floatingGroup}>
               <input
                 name="role"
@@ -106,7 +148,6 @@ const AddJobPage = () => {
               />
               <label style={styles.floatingLabel}>Role *</label>
             </div>
-
             <div style={styles.floatingGroup}>
               <select
                 name="status"
@@ -122,7 +163,6 @@ const AddJobPage = () => {
               </select>
               <label style={styles.floatingLabel}>Status</label>
             </div>
-
             <div style={styles.floatingGroup}>
               <input
                 type="date"
@@ -147,7 +187,6 @@ const AddJobPage = () => {
               />
               <label style={styles.floatingLabel}>Location</label>
             </div>
-
             <div style={styles.floatingGroup}>
               <input
                 name="salaryRange"
@@ -157,7 +196,6 @@ const AddJobPage = () => {
               />
               <label style={styles.floatingLabel}>Salary Range</label>
             </div>
-
             <div style={{ ...styles.floatingGroup, gridColumn: "span 2" }}>
               <input
                 name="link"
@@ -215,7 +253,6 @@ const AddJobPage = () => {
               />
               <label style={styles.floatingLabel}>Job Description</label>
             </div>
-
             <div style={styles.floatingGroup}>
               <textarea
                 name="notes"
@@ -242,9 +279,10 @@ const AddJobPage = () => {
               style={{
                 ...styles.submitBtn,
                 opacity: loading ? 0.7 : 1,
+                cursor: loading ? "not-allowed" : "pointer",
               }}
             >
-              {loading ? "Saving..." : "Save Application"}
+              {loading ? "Saving…" : "Save Application"}
             </button>
           </div>
         </form>
@@ -253,7 +291,7 @@ const AddJobPage = () => {
   );
 };
 
-const styles = {
+const styles: { [key: string]: React.CSSProperties } = {
   page: {
     minHeight: "100vh",
     background: "linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)",
@@ -269,6 +307,7 @@ const styles = {
     borderRadius: "16px",
     padding: "40px",
     boxShadow: "0 10px 25px rgba(0,0,0,0.05)",
+    height: "fit-content",
   },
   title: {
     fontSize: "26px",
@@ -293,18 +332,17 @@ const styles = {
     gap: "24px",
     marginBottom: "10px",
   },
-  floatingGroup: {
-    position: "relative",
-  },
+  floatingGroup: { position: "relative" },
   floatingInput: {
     width: "100%",
     padding: "14px 16px",
-    paddingTop: "18px", // Space for label
+    paddingTop: "18px",
     borderRadius: "10px",
     border: "1px solid #d1d5db",
     fontSize: "15px",
     outline: "none",
-    backgroundColor: "transparent",
+    backgroundColor: "white",
+    boxSizing: "border-box",
   },
   floatingTextarea: {
     width: "100%",
@@ -315,6 +353,7 @@ const styles = {
     outline: "none",
     minHeight: "120px",
     resize: "vertical",
+    boxSizing: "border-box",
   },
   floatingLabel: {
     position: "absolute",
@@ -327,19 +366,17 @@ const styles = {
     padding: "0 6px",
     pointerEvents: "none",
   },
-  textareaContainer: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "24px",
-  },
+  textareaContainer: { display: "flex", flexDirection: "column", gap: "24px" },
+  form: { display: "flex", flexDirection: "column" },
   errorBox: {
     backgroundColor: "#fee2e2",
     color: "#b91c1c",
-    padding: "12px",
+    padding: "12px 16px",
     borderRadius: "8px",
     marginBottom: "20px",
     fontSize: "14px",
     border: "1px solid #fecaca",
+    fontWeight: "500",
   },
   actionArea: {
     display: "flex",
@@ -354,7 +391,6 @@ const styles = {
     border: "none",
     borderRadius: "10px",
     fontWeight: "600",
-    cursor: "pointer",
   },
   cancelBtn: {
     padding: "12px 28px",

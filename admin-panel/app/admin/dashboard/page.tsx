@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import axios from "axios";
 import Link from "next/link";
 import {
   BarChart,
@@ -14,33 +13,62 @@ import {
   Cell,
 } from "recharts";
 
+interface Status {
+  _id: string;
+  label: string;
+  color?: string;
+}
+
+interface Job {
+  _id: string;
+  role: string;
+  company: string;
+  createdAt?: string;
+  appliedDate?: string;
+  status?: Status | string;
+}
+
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
+
+const getStatusLabel = (status: Job["status"]) => {
+  if (!status) return "No Status";
+  if (typeof status === "object") return status.label;
+  return status;
+};
+
+const getStatusColor = (status: Job["status"]) => {
+  if (status && typeof status === "object" && status.color) return status.color;
+  return "#6b7280";
+};
+
 const AdminDashboard = () => {
-  const [jobs, setJobs] = useState<any[]>([]);
+  const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const baseUrl =
-          process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
-        const response = await axios.get(`${baseUrl}/job`, {
-          headers: { Authorization: `Bearer ${token}` },
+        const res = await fetch(`${BASE_URL}/job?page=1&limit=200`, {
+          credentials: "include",
         });
-        const jobData = Array.isArray(response.data)
-          ? response.data
-          : response.data.jobs;
-        setJobs(jobData);
-      } catch (err) {
-        console.error("Failed to fetch jobs");
+
+        if (res.status === 401) {
+          window.location.href = "/admin/login";
+          return;
+        }
+
+        const data = await res.json();
+        setJobs(Array.isArray(data) ? data : (data.jobs ?? []));
+      } catch {
+        console.error("Failed to fetch jobs.");
       } finally {
         setLoading(false);
       }
     };
+
     fetchJobs();
   }, []);
 
-  // Prepare Chart Data: Last 7 Days Activity
   const chartData = useMemo(() => {
     const last7Days = [...Array(7)]
       .map((_, i) => {
@@ -55,7 +83,7 @@ const AdminDashboard = () => {
       .reverse();
 
     jobs.forEach((job) => {
-      const jobDate = new Date(job.createdAt || job.appliedDate)
+      const jobDate = new Date(job.createdAt || job.appliedDate || "")
         .toISOString()
         .split("T")[0];
       const dayMatch = last7Days.find((d) => d.fullDate === jobDate);
@@ -65,21 +93,25 @@ const AdminDashboard = () => {
     return last7Days;
   }, [jobs]);
 
-  const stats = {
-    total: jobs.length,
-    interviewing: jobs.filter(
-      (j) => (j.status?.label || j.status) === "Interviewing",
-    ).length,
-    offers: jobs.filter((j) => (j.status?.label || j.status) === "Offered")
-      .length,
-    rejected: jobs.filter((j) => (j.status?.label || j.status) === "Rejected")
-      .length,
-  };
+  const stats = useMemo(
+    () => ({
+      total: jobs.length,
+      interviewing: jobs.filter(
+        (j) => getStatusLabel(j.status) === "Interviewing",
+      ).length,
+      offers: jobs.filter((j) => getStatusLabel(j.status) === "Offered").length,
+      rejected: jobs.filter((j) => getStatusLabel(j.status) === "Rejected")
+        .length,
+    }),
+    [jobs],
+  );
 
   if (loading)
     return (
       <div style={styles.page}>
-        <p>Loading Chart...</p>
+        <p style={{ textAlign: "center", color: "#6b7280" }}>
+          Loading dashboard…
+        </p>
       </div>
     );
 
@@ -98,7 +130,6 @@ const AdminDashboard = () => {
 
         {/* Stats Grid */}
         <div style={styles.statsGrid}>
-          {/* ... (Same StatCards as before) ... */}
           <div style={styles.statCard}>
             <span style={styles.statLabel}>Total</span>
             <span style={styles.statValue}>{stats.total}</span>
@@ -117,7 +148,7 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        {/* CHART SECTION */}
+        {/* Chart */}
         <div
           style={{ ...styles.section, marginBottom: "30px", height: "350px" }}
         >
@@ -163,7 +194,7 @@ const AdminDashboard = () => {
           </ResponsiveContainer>
         </div>
 
-        {/* Recent Activity List */}
+        {/* Recent Applications */}
         <div style={styles.section}>
           <div style={styles.sectionHeader}>
             <h3 style={styles.sectionTitle}>Recent Applications</h3>
@@ -172,26 +203,36 @@ const AdminDashboard = () => {
             </Link>
           </div>
           <div style={styles.list}>
-            {jobs.slice(0, 4).map((job) => (
-              <div key={job._id} style={styles.jobItem}>
-                <div style={styles.jobInfo}>
-                  <h4 style={styles.jobTitle}>{job.role}</h4>
-                  <p style={styles.jobMeta}>{job.company}</p>
+            {jobs.length === 0 ? (
+              <p
+                style={{
+                  color: "#9ca3af",
+                  fontSize: "14px",
+                  textAlign: "center",
+                  padding: "20px 0",
+                }}
+              >
+                No applications yet.
+              </p>
+            ) : (
+              jobs.slice(0, 4).map((job) => (
+                <div key={job._id} style={styles.jobItem}>
+                  <div style={styles.jobInfo}>
+                    <h4 style={styles.jobTitle}>{job.role}</h4>
+                    <p style={styles.jobMeta}>{job.company}</p>
+                  </div>
+                  <span
+                    style={{
+                      ...styles.badge,
+                      backgroundColor: getStatusColor(job.status) + "20",
+                      color: getStatusColor(job.status),
+                    }}
+                  >
+                    {getStatusLabel(job.status)}
+                  </span>
                 </div>
-                <span
-                  style={{
-                    ...styles.badge,
-                    backgroundColor: job.status?.color
-                      ? job.status.color + "20"
-                      : "#f3f4f6",
-                    color: job.status?.color || "#6b7280",
-                  }}
-                >
-                  {job.status?.label ||
-                    (typeof job.status === "string" ? job.status : "No Status")}
-                </span>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>
@@ -272,9 +313,9 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderRadius: "12px",
     border: "1px solid #f3f4f6",
   },
+  jobInfo: { flex: 1 },
   jobTitle: { fontSize: "15px", fontWeight: "600", margin: 0 },
   jobMeta: { fontSize: "13px", color: "#6b7280", margin: 0 },
-  jobInfo: { flex: 1 },
   badge: {
     padding: "4px 10px",
     borderRadius: "6px",

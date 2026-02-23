@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useToast } from "@/components/ToastProvider";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function ForgotPasswordPage() {
+  const toast = useToast();
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -31,7 +33,7 @@ export default function ForgotPasswordPage() {
       if (!res.ok) throw new Error(data.message || "Something went wrong.");
       setSubmitted(true);
     } catch (err: any) {
-      setError(err.message || "Something went wrong.");
+      toast.error(err.message || "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -55,7 +57,7 @@ export default function ForgotPasswordPage() {
       <div style={styles.blob} aria-hidden="true" />
 
       <Link href="/" style={styles.logo}>
-        JobTracker
+        OfferFlow
       </Link>
 
       <div className="card" style={styles.card}>

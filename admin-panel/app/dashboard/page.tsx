@@ -13,6 +13,8 @@ import {
   Cell,
 } from "recharts";
 
+import { useToast } from "@/components/ToastProvider";
+
 interface Status {
   _id: string;
   label: string;
@@ -43,6 +45,7 @@ const getStatusColor = (status: Job["status"]) => {
 };
 
 export default function UserDashboard() {
+  const toast = useToast();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [userName, setUserName] = useState("");
@@ -61,8 +64,8 @@ export default function UserDashboard() {
         if (!res.ok) return;
         const data = await res.json();
         setJobs(Array.isArray(data) ? data : (data.jobs ?? []));
-      } catch {
-        console.error("Failed to fetch jobs.");
+      } catch(err: any) {
+        toast.error(err.message || "Failed to load job details.");
       } finally {
         setLoading(false);
       }

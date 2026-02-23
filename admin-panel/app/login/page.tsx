@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useToast } from "@/components/ToastProvider";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
@@ -17,6 +18,7 @@ const validateEmail = (email: string) =>
 const validatePassword = (password: string) => password.length >= 8;
 
 export default function LoginPage() {
+  const toast = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -66,7 +68,6 @@ export default function LoginPage() {
 
       const data = await response.json();
 
-      // ✅ Handle unverified email specifically
       if (response.status === 403 && data.code === "EMAIL_NOT_VERIFIED") {
         setUnverifiedEmail(data.email || email);
         return;
@@ -91,7 +92,7 @@ export default function LoginPage() {
       const newFailCount = failCount + 1;
       setFailCount(newFailCount);
       if (newFailCount >= 3) startCooldown();
-      setError(err.message || "Something went wrong. Please try again.");
+      toast.error(err.message || "Something went wrong. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -212,7 +213,7 @@ export default function LoginPage() {
                 </svg>
               </div>
               <h1 style={styles.title}>Welcome back</h1>
-              <p style={styles.subtitle}>Sign in to your JobTracker account</p>
+              <p style={styles.subtitle}>Sign in to your OfferFlow account</p>
             </div>
 
             {error && (

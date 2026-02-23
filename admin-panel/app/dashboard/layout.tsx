@@ -149,9 +149,9 @@ export default function DashboardLayout({
       >
         {/* Logo */}
         <div style={styles.sidebarTop}>
-          <Link href="/" style={styles.logo}>
-            <span style={styles.logoMark}>JT</span>
-            <span style={styles.logoText}>JobTracker</span>
+          <Link href="/dashboard" style={styles.logo}>
+            <span style={styles.logoMark}>OF</span>
+            <span style={styles.logoText}>OfferFlow</span>
           </Link>
         </div>
 
@@ -238,7 +238,7 @@ export default function DashboardLayout({
               <line x1="3" y1="18" x2="21" y2="18" />
             </svg>
           </button>
-          <span style={styles.mobileLogo}>JobTracker</span>
+          <span style={styles.mobileLogo}>OfferFlow</span>
           <div style={styles.mobileAvatar}>{initials}</div>
         </div>
 

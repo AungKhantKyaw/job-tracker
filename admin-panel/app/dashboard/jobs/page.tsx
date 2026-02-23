@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useToast } from "@/components/ToastProvider";
 
 interface Status {
   _id: string;
@@ -32,6 +33,7 @@ const getStatusColor = (status: Job["status"]) => {
 };
 
 export default function UserJobsPage() {
+  const toast = useToast();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
   const [statuses, setStatuses] = useState<Status[]>([]);
@@ -61,8 +63,8 @@ export default function UserJobsPage() {
       setStatuses(statusData);
       setJobs(jobData.jobs ?? []);
       setTotalPages(jobData.totalPages ?? 1);
-    } catch {
-      setError("Failed to fetch data.");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to fetch jobs.");
     } finally {
       setLoading(false);
     }
@@ -98,8 +100,9 @@ export default function UserJobsPage() {
       });
       if (!res.ok) throw new Error("Delete failed.");
       setJobs((prev) => prev.filter((j) => j._id !== id));
+      toast.success("Application deleted.");
     } catch {
-      alert("Error deleting job.");
+      toast.error("Failed to delete application.");
     } finally {
       setDeletingId(null);
     }

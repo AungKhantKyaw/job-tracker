@@ -3,6 +3,7 @@
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useToast } from "@/components/ToastProvider";
 
 interface EditProps {
   params: Promise<{ id: string }>;
@@ -48,6 +49,7 @@ const getHistoryLabel = (status: StatusHistory["status"]) => {
 };
 
 export default function UserEditJobPage({ params: paramsPromise }: EditProps) {
+  const toast = useToast();
   const params = use(paramsPromise);
   const { id } = params;
   const router = useRouter();
@@ -94,7 +96,7 @@ export default function UserEditJobPage({ params: paramsPromise }: EditProps) {
           followupDate: formatDate(job.followupDate),
         });
       } catch (err: any) {
-        setError(err.message || "Failed to load job details.");
+        toast.error(err.message || "Failed to load job details.");
       } finally {
         setLoading(false);
       }
@@ -128,9 +130,11 @@ export default function UserEditJobPage({ params: paramsPromise }: EditProps) {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to update.");
+
+      toast.success("Application updated successfully!");
       router.push("/dashboard/jobs");
     } catch (err: any) {
-      setError(err.message || "Failed to update.");
+      toast.error(err.message || "Failed to update.");
     } finally {
       setSaving(false);
     }

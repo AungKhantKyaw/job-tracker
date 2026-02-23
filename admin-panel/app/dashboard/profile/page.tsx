@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useToast } from "@/components/ToastProvider";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
@@ -12,6 +13,7 @@ interface FormData {
 }
 
 export default function UserProfilePage() {
+  const toast = useToast();
   const [formData, setFormData] = useState<FormData>({
     name: "",
     email: "",
@@ -19,8 +21,6 @@ export default function UserProfilePage() {
     confirm: "",
   });
   const [saving, setSaving] = useState(false);
-  const [success, setSuccess] = useState("");
-  const [error, setError] = useState("");
 
   useEffect(() => {
     try {
@@ -35,25 +35,21 @@ export default function UserProfilePage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-    setError("");
-    setSuccess("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
 
     if (!formData.name.trim()) {
-      setError("Name is required.");
+      toast.warning("Name is required.");
       return;
     }
     if (formData.password && formData.password.length < 8) {
-      setError("Password must be at least 8 characters.");
+      toast.warning("Password must be at least 8 characters.");
       return;
     }
     if (formData.password && formData.password !== formData.confirm) {
-      setError("Passwords do not match.");
+      toast.warning("Passwords do not match.");
       return;
     }
 
@@ -75,7 +71,6 @@ export default function UserProfilePage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to update profile.");
 
-      // Update sessionStorage so the sidebar name reflects changes
       const current = JSON.parse(sessionStorage.getItem("user") || "{}");
       sessionStorage.setItem(
         "user",
@@ -87,9 +82,9 @@ export default function UserProfilePage() {
       );
 
       setFormData((prev) => ({ ...prev, password: "", confirm: "" }));
-      setSuccess("Profile updated successfully.");
+      toast.success("Profile updated successfully.");
     } catch (err: any) {
-      setError(err.message || "Something went wrong.");
+      toast.error(err.message || "Something went wrong.");
     } finally {
       setSaving(false);
     }
@@ -108,6 +103,7 @@ export default function UserProfilePage() {
       <style>{`
         .input-field:focus { border-color: #2563eb !important; outline: none; }
         .save-btn:hover:not(:disabled) { background: #1d4ed8 !important; }
+        .danger-btn:hover { background: #fef2f2 !important; }
       `}</style>
 
       <div style={styles.header}>
@@ -124,45 +120,9 @@ export default function UserProfilePage() {
           <div style={styles.roleBadge}>User</div>
         </div>
 
-        {/* Form card */}
+        {/* Form card — errorBox and successBox removed entirely */}
         <div style={styles.formCard}>
-          {error && (
-            <div style={styles.errorBox}>
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                style={{ flexShrink: 0 }}
-              >
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="8" x2="12" y2="12" />
-                <line x1="12" y1="16" x2="12.01" y2="16" />
-              </svg>
-              {error}
-            </div>
-          )}
-          {success && (
-            <div style={styles.successBox}>
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                style={{ flexShrink: 0 }}
-              >
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-              {success}
-            </div>
-          )}
-
           <form onSubmit={handleSubmit}>
-            {/* Account info */}
             <div style={styles.section}>
               <p style={styles.sectionLabel}>Account Information</p>
               <div style={styles.grid}>
@@ -195,7 +155,6 @@ export default function UserProfilePage() {
               </div>
             </div>
 
-            {/* Password */}
             <div style={styles.section}>
               <p style={styles.sectionLabel}>Change Password</p>
               <p style={styles.sectionHint}>
@@ -259,9 +218,10 @@ export default function UserProfilePage() {
           </p>
         </div>
         <button
+          className="danger-btn"
           style={styles.dangerBtn}
           onClick={() =>
-            alert("Please contact support to delete your account.")
+            toast.info("Please contact support to delete your account.")
           }
         >
           Delete Account
@@ -279,7 +239,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     flexDirection: "column",
     gap: 24,
   },
-
   header: { marginBottom: 4 },
   title: {
     fontFamily: '"Instrument Serif", serif',
@@ -290,15 +249,12 @@ const styles: { [key: string]: React.CSSProperties } = {
     letterSpacing: "-0.4px",
   },
   subtitle: { fontSize: 14, color: "#64748b", margin: 0 },
-
   layout: {
     display: "grid",
     gridTemplateColumns: "200px 1fr",
     gap: 20,
     alignItems: "start",
   },
-
-  // Avatar card
   avatarCard: {
     backgroundColor: "#fff",
     borderRadius: 14,
@@ -342,8 +298,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     textTransform: "uppercase",
     letterSpacing: "0.05em",
   },
-
-  // Form card
   formCard: {
     backgroundColor: "#fff",
     borderRadius: 14,
@@ -351,34 +305,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     border: "1px solid #f1f5f9",
     boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
   },
-
-  errorBox: {
-    display: "flex",
-    alignItems: "center",
-    gap: 8,
-    backgroundColor: "#fef2f2",
-    color: "#dc2626",
-    padding: "10px 14px",
-    borderRadius: 8,
-    fontSize: 13,
-    marginBottom: 20,
-    border: "1px solid #fecaca",
-    fontWeight: 500,
-  },
-  successBox: {
-    display: "flex",
-    alignItems: "center",
-    gap: 8,
-    backgroundColor: "#f0fdf4",
-    color: "#16a34a",
-    padding: "10px 14px",
-    borderRadius: 8,
-    fontSize: 13,
-    marginBottom: 20,
-    border: "1px solid #bbf7d0",
-    fontWeight: 500,
-  },
-
   section: { marginBottom: 28 },
   sectionLabel: {
     fontSize: 11,
@@ -391,7 +317,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderBottom: "1px solid #f1f5f9",
   },
   sectionHint: { fontSize: 12, color: "#94a3b8", margin: "-6px 0 14px" },
-
   grid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 },
   field: { display: "flex", flexDirection: "column", gap: 6 },
   label: { fontSize: 12, fontWeight: 600, color: "#64748b" },
@@ -405,7 +330,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     boxSizing: "border-box",
     transition: "border-color 0.2s",
   },
-
   actions: { display: "flex", justifyContent: "flex-end" },
   saveBtn: {
     padding: "10px 24px",
@@ -417,8 +341,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontWeight: 600,
     transition: "background 0.2s",
   },
-
-  // Danger zone
   dangerCard: {
     backgroundColor: "#fff",
     borderRadius: 14,
@@ -448,5 +370,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontWeight: 600,
     cursor: "pointer",
     flexShrink: 0,
+    transition: "background 0.2s",
   },
 };

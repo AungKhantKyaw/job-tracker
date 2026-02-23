@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useToast } from "@/components/ToastProvider";
 
 interface Status {
   _id: string;
@@ -27,10 +28,10 @@ interface FormData {
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
 export default function UserAddJobPage() {
+  const toast = useToast();
   const router = useRouter();
   const [statuses, setStatuses] = useState<Status[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
   const [formData, setFormData] = useState<FormData>({
     company: "",
@@ -58,7 +59,7 @@ export default function UserAddJobPage() {
         if (data.length > 0)
           setFormData((prev) => ({ ...prev, status: data[0]._id }));
       } catch {
-        console.error("Could not load statuses.");
+        toast.error("Could not load statuses. Please refresh.");
       }
     };
     fetchStatuses();
@@ -70,15 +71,16 @@ export default function UserAddJobPage() {
     >,
   ) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-    setError("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!formData.status) {
-      setError("Please select a status.");
+      toast.warning("Please select a status.");
       return;
     }
+
     setLoading(true);
     try {
       const res = await fetch(`${BASE_URL}/job`, {
@@ -89,9 +91,11 @@ export default function UserAddJobPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to create job.");
+
+      toast.success("Application saved successfully!");
       router.push("/dashboard/jobs");
     } catch (err: any) {
-      setError(err.message || "Failed to create job.");
+      toast.error(err.message || "Failed to create job.");
     } finally {
       setLoading(false);
     }
@@ -110,8 +114,6 @@ export default function UserAddJobPage() {
         <p style={styles.subtitle}>
           Track a new job you've applied to or plan to apply for
         </p>
-
-        {error && <div style={styles.errorBox}>✕ {error}</div>}
 
         <form onSubmit={handleSubmit}>
           <Section label="General Information">
@@ -253,7 +255,11 @@ export default function UserAddJobPage() {
             <button
               type="submit"
               disabled={loading}
-              style={{ ...styles.submitBtn, opacity: loading ? 0.7 : 1 }}
+              style={{
+                ...styles.submitBtn,
+                opacity: loading ? 0.7 : 1,
+                cursor: loading ? "not-allowed" : "pointer",
+              }}
             >
               {loading ? "Saving…" : "Save Application"}
             </button>
@@ -264,7 +270,6 @@ export default function UserAddJobPage() {
   );
 }
 
-// Small helper components to keep JSX clean
 function Section({
   label,
   children,
@@ -332,16 +337,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     letterSpacing: "-0.4px",
   },
   subtitle: { fontSize: 14, color: "#64748b", margin: "0 0 28px" },
-  errorBox: {
-    backgroundColor: "#fef2f2",
-    color: "#dc2626",
-    padding: "11px 14px",
-    borderRadius: 8,
-    fontSize: 13,
-    marginBottom: 20,
-    border: "1px solid #fecaca",
-    fontWeight: 500,
-  },
   grid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 },
   input: {
     padding: "10px 12px",
@@ -386,6 +381,5 @@ const styles: { [key: string]: React.CSSProperties } = {
     border: "none",
     fontSize: 14,
     fontWeight: 600,
-    cursor: "pointer",
   },
 };

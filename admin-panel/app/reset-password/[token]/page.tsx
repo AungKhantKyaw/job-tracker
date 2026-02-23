@@ -3,6 +3,7 @@
 import { useState, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useToast } from "@/components/ToastProvider";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export default function ResetPasswordPage({ params: paramsPromise }: Props) {
+  const toast = useToast();
   const params = use(paramsPromise);
   const { token } = params;
   const router = useRouter();
@@ -46,7 +48,7 @@ export default function ResetPasswordPage({ params: paramsPromise }: Props) {
       setSuccess(true);
       setTimeout(() => router.push("/login"), 3000);
     } catch (err: any) {
-      setError(err.message || "Something went wrong.");
+      toast.error(err.message || "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -95,7 +97,7 @@ export default function ResetPasswordPage({ params: paramsPromise }: Props) {
       <div style={styles.blob} aria-hidden="true" />
 
       <Link href="/" style={styles.logo}>
-        JobTracker
+        OfferFlow
       </Link>
 
       <div className="card" style={styles.card}>

@@ -3,12 +3,14 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useToast } from "@/components/ToastProvider";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function RegisterPage() {
+  const toast = useToast();
   const router = useRouter();
   const [formData, setFormData] = useState({
     name: "",
@@ -47,7 +49,6 @@ export default function RegisterPage() {
 
     setIsLoading(true);
     try {
-      // Step 1: Register
       const res = await fetch(`${BASE_URL}/user/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -61,7 +62,6 @@ export default function RegisterPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Registration failed.");
 
-      // Step 2: Auto-login after registration
       const loginRes = await fetch(`${BASE_URL}/user/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -74,7 +74,6 @@ export default function RegisterPage() {
 
       const loginData = await loginRes.json();
       if (!loginRes.ok) {
-        // Registered but login failed — redirect to login
         router.push("/login?registered=true");
         return;
       }
@@ -90,7 +89,7 @@ export default function RegisterPage() {
 
       router.push("/admin/dashboard");
     } catch (err: any) {
-      setError(err.message || "Something went wrong. Please try again.");
+      toast.error(err.message || "Something went wrong. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -118,7 +117,7 @@ export default function RegisterPage() {
       {/* Nav */}
       <nav style={styles.nav}>
         <Link href="/" style={styles.navLogo}>
-          JobTracker
+          OfferFlow
         </Link>
         <span style={styles.navHint}>
           Already have an account?{" "}

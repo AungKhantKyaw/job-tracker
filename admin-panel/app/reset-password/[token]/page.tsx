@@ -97,7 +97,7 @@ export default function ResetPasswordPage({ params: paramsPromise }: Props) {
       <div style={styles.blob} aria-hidden="true" />
 
       <Link href="/" style={styles.logo}>
-        OfferFlow
+        OfferGrid
       </Link>
 
       <div className="card" style={styles.card}>

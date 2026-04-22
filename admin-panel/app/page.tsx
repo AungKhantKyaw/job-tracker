@@ -1,8 +1,11 @@
-"use client";
-
 import Link from "next/link";
 import styles from "./landing.module.css";
 import Image from "next/image";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Home Page | OfferGrid",
+};
 
 export default function LandingPage() {
   return (

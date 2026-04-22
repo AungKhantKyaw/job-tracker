@@ -14,22 +14,10 @@ import {
 } from "recharts";
 
 import { useToast } from "@/components/ToastProvider";
+import styles from "./dashboard.module.css";
 
-interface Status {
-  _id: string;
-  label: string;
-  color: string;
-}
-
-interface Job {
-  _id: string;
-  role: string;
-  company: string;
-  location?: string;
-  appliedDate?: string;
-  createdAt?: string;
-  status?: Status | string;
-}
+interface Status { _id: string; label: string; color: string; }
+interface Job { _id: string; role: string; company: string; location?: string; appliedDate?: string; createdAt?: string; status?: Status | string; }
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
@@ -58,9 +46,7 @@ export default function UserDashboard() {
 
     const fetchJobs = async () => {
       try {
-        const res = await fetch(`${BASE_URL}/job?page=1&limit=200`, {
-          credentials: "include",
-        });
+        const res = await fetch(`${BASE_URL}/job?page=1&limit=200`, { credentials: "include" });
         if (!res.ok) return;
         const data = await res.json();
         setJobs(Array.isArray(data) ? data : (data.jobs ?? []));
@@ -70,58 +56,39 @@ export default function UserDashboard() {
         setLoading(false);
       }
     };
-
     fetchJobs();
   }, []);
 
-  const stats = useMemo(
-    () => ({
-      total: jobs.length,
-      applied: jobs.filter((j) => getStatusLabel(j.status) === "Applied")
-        .length,
-      interviewing: jobs.filter(
-        (j) => getStatusLabel(j.status) === "Interviewing",
-      ).length,
-      offered: jobs.filter((j) => getStatusLabel(j.status) === "Offered")
-        .length,
-      rejected: jobs.filter((j) => getStatusLabel(j.status) === "Rejected")
-        .length,
-    }),
-    [jobs],
-  );
+  const stats = useMemo(() => ({
+    total: jobs.length,
+    applied: jobs.filter((j) => getStatusLabel(j.status) === "Applied").length,
+    interviewing: jobs.filter((j) => getStatusLabel(j.status) === "Interviewing").length,
+    offered: jobs.filter((j) => getStatusLabel(j.status) === "Offered").length,
+    rejected: jobs.filter((j) => getStatusLabel(j.status) === "Rejected").length,
+  }), [jobs]);
 
   const chartData = useMemo(() => {
-    const last7 = [...Array(7)]
-      .map((_, i) => {
-        const d = new Date();
-        d.setDate(d.getDate() - i);
-        return {
-          date: d.toLocaleDateString("en-US", { weekday: "short" }),
-          fullDate: d.toISOString().split("T")[0],
-          count: 0,
-        };
-      })
-      .reverse();
+    const last7 = [...Array(7)].map((_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      return {
+        date: d.toLocaleDateString("en-US", { weekday: "short" }),
+        fullDate: d.toISOString().split("T")[0],
+        count: 0,
+      };
+    }).reverse();
 
     jobs.forEach((job) => {
       try {
-        const date = new Date(job.createdAt || job.appliedDate || "")
-          .toISOString()
-          .split("T")[0];
+        const date = new Date(job.createdAt || job.appliedDate || "").toISOString().split("T")[0];
         const match = last7.find((d) => d.fullDate === date);
         if (match) match.count += 1;
       } catch {}
     });
-
     return last7;
   }, [jobs]);
 
-  // Success rate
-  const successRate =
-    stats.total > 0
-      ? Math.round(((stats.interviewing + stats.offered) / stats.total) * 100)
-      : 0;
-
+  const successRate = stats.total > 0 ? Math.round(((stats.interviewing + stats.offered) / stats.total) * 100) : 0;
   const recentJobs = jobs.slice(0, 5);
 
   const greeting = () => {
@@ -132,149 +99,64 @@ export default function UserDashboard() {
   };
 
   return (
-    <div style={styles.page}>
-      <style>{`
-        @keyframes fadeUp {
-          from { opacity:0; transform:translateY(16px); }
-          to   { opacity:1; transform:translateY(0); }
-        }
-        /* Responsive Grid for Stat Cards */
-          .stats-grid {
-            display: grid;
-            gap: 14px;
-            grid-template-columns: repeat(2, 1fr); /* 2 columns on mobile */
-            width: 100%;
-          }
-
-          @media (min-width: 640px) {
-            .stats-grid { grid-template-columns: repeat(3, 1fr); }
-          }
-
-          @media (min-width: 1024px) {
-            .stats-grid { grid-template-columns: repeat(5, 1fr); }
-          }
-
-          /* Responsive Grid for Chart/Pipeline */
-          .two-col-grid {
-            display: grid;
-            gap: 20px;
-            grid-template-columns: 1fr; /* Stacked on mobile */
-          }
-
-          @media (min-width: 1024px) {
-            .two-col-grid { grid-template-columns: 1.2fr 1fr; }
-          }
-
-          /* Table responsiveness */
-          @media (max-width: 640px) {
-            .hide-mobile { display: none !important; }
-            .job-table-row { flex-wrap: wrap; }
-          }
-
-          @keyframes fadeUp {
-            from { opacity:0; transform:translateY(16px); }
-            to   { opacity:1; transform:translateY(0); }
-          }
-          .stat-card { animation: fadeUp 0.4s ease both; min-width: 0; }
-          .stat-card:nth-child(1) { animation-delay: 0.05s; }
-          .stat-card:nth-child(2) { animation-delay: 0.1s; }
-          .stat-card:nth-child(3) { animation-delay: 0.15s; }
-          .stat-card:nth-child(4) { animation-delay: 0.2s; }
-          .stat-card:nth-child(5) { animation-delay: 0.25s; }
-          .job-row:hover { background: #f8fafc !important; }
-      `}</style>
-
+    <div className={styles.page}>
       {/* Header */}
-      <div style={styles.pageHeader}>
+      <div className={styles.pageHeader}>
         <div>
-          <h1 style={styles.greeting}>
-            {greeting()}, <span style={styles.greetingName}>{userName}</span> 👋
+          <h1 className={styles.greeting}>
+            {greeting()}, <span className={styles.greetingName}>{userName}</span> 👋
           </h1>
-          <p style={styles.greetingSub}>
-            {stats.total === 0
-              ? "Start tracking your first job application."
-              : `You have ${stats.total} application${stats.total !== 1 ? "s" : ""} tracked.`}
+          <p className={styles.greetingSub}>
+            {stats.total === 0 ? "Start tracking your first job." : `You have ${stats.total} application${stats.total !== 1 ? "s" : ""} tracked.`}
           </p>
         </div>
-        <Link
-          href="/dashboard/jobs/add"
-          style={styles.addBtn}
-          className="add-btn"
-        >
+        <Link href="/dashboard/jobs/add" className={styles.addBtn}>
           + Add Application
         </Link>
       </div>
 
       {/* Stat cards */}
-      <div className="stats-grid">
+      <div className={styles.statsGrid}>
         {[
-          { label: "Total", value: stats.total, color: "#2563eb", bg: "#eff6ff", sub: "applications" },
-          { label: "Applied", value: stats.applied, color: "#8b5cf6", bg: "#f5f3ff", sub: "waiting" },
-          { label: "Interviewing", value: stats.interviewing, color: "#f59e0b", bg: "#fffbeb", sub: "in progress" },
-          { label: "Offered", value: stats.offered, color: "#10b981", bg: "#ecfdf5", sub: "🎉 congrats" },
-          { label: "Success Rate", value: `${successRate}%`, color: "#0ea5e9", bg: "#f0f9ff", sub: "interview rate" },
+          { label: "Total", value: stats.total, color: "#2563eb", bg: "#eff6ff", sub: "applications", delay: "0.05s" },
+          { label: "Applied", value: stats.applied, color: "#8b5cf6", bg: "#f5f3ff", sub: "waiting", delay: "0.1s" },
+          { label: "Interviewing", value: stats.interviewing, color: "#f59e0b", bg: "#fffbeb", sub: "in progress", delay: "0.15s" },
+          { label: "Offered", value: stats.offered, color: "#10b981", bg: "#ecfdf5", sub: "🎉 congrats", delay: "0.2s" },
+          { label: "Success Rate", value: `${successRate}%`, color: "#0ea5e9", bg: "#f0f9ff", sub: "interview rate", delay: "0.25s" },
         ].map((s) => (
-          <div key={s.label} className="stat-card" style={styles.statCard}>
-            <div style={{ ...styles.statIconBg, backgroundColor: s.bg }}>
-              <span style={{ ...styles.statValue, color: s.color }}>
+          <div key={s.label} className={styles.statCard} style={{ animationDelay: s.delay }}>
+            <div className={styles.statIconBg} style={{ backgroundColor: s.bg }}>
+              <span className={styles.statValue} style={{ color: s.color }}>
                 {loading ? "—" : s.value}
               </span>
             </div>
             <div style={{ overflow: "hidden" }}>
-              <p style={styles.statLabel}>{s.label}</p>
-              <p style={styles.statSub}>{s.sub}</p>
+              <p className={styles.statLabel}>{s.label}</p>
+              <p className={styles.statSub}>{s.sub}</p>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Chart + Recent side by side */}
-      <div className="two-col-grid">
-        {/* Chart */}
-        <div style={styles.card}>
-          <div style={styles.cardHeader}>
-            <h2 style={styles.cardTitle}>Activity</h2>
-            <span style={styles.cardSub}>Last 7 days</span>
+      <div className={styles.twoColGrid}>
+        {/* Activity Chart */}
+        <div className={styles.card}>
+          <div className={styles.cardHeader}>
+            <h2 className={styles.cardTitle}>Activity</h2>
+            <span className={styles.cardSub}>Last 7 days</span>
           </div>
           {loading ? (
-            <div style={styles.loadingBox}>Loading…</div>
+            <div className={styles.loadingBox}>Loading…</div>
           ) : (
             <ResponsiveContainer width="100%" height={200}>
-              <BarChart
-                data={chartData}
-                margin={{ top: 4, right: 4, left: -20, bottom: 0 }}
-              >
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  vertical={false}
-                  stroke="#f1f5f9"
-                />
-                <XAxis
-                  dataKey="date"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: "#94a3b8", fontSize: 11 }}
-                />
-                <YAxis
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: "#94a3b8", fontSize: 11 }}
-                  allowDecimals={false}
-                />
-                <Tooltip
-                  cursor={{ fill: "#f8fafc" }}
-                  contentStyle={{
-                    borderRadius: 8,
-                    border: "1px solid #e2e8f0",
-                    fontSize: 12,
-                  }}
-                />
+              <BarChart data={chartData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fill: "#94a3b8", fontSize: 11 }} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fill: "#94a3b8", fontSize: 11 }} allowDecimals={false} />
+                <Tooltip cursor={{ fill: "#f8fafc" }} contentStyle={{ borderRadius: 8, border: "1px solid #e2e8f0", fontSize: 12 }} />
                 <Bar dataKey="count" radius={[4, 4, 0, 0]} barSize={28}>
                   {chartData.map((entry, i) => (
-                    <Cell
-                      key={i}
-                      fill={entry.count > 0 ? "#2563eb" : "#e2e8f0"}
-                    />
+                    <Cell key={i} fill={entry.count > 0 ? "#2563eb" : "#e2e8f0"} />
                   ))}
                 </Bar>
               </BarChart>
@@ -283,60 +165,43 @@ export default function UserDashboard() {
         </div>
 
         {/* Pipeline breakdown */}
-        <div style={styles.card}>
-          <div style={styles.cardHeader}>
-            <h2 style={styles.cardTitle}>Pipeline</h2>
-            <Link href="/dashboard/jobs" style={styles.viewAll}>
-              View all →
-            </Link>
+        <div className={styles.card}>
+          <div className={styles.cardHeader}>
+            <h2 className={styles.cardTitle}>Pipeline</h2>
+            <Link href="/dashboard/jobs" className={styles.viewAll}>View all →</Link>
           </div>
           {loading ? (
-            <div style={styles.loadingBox}>Loading…</div>
+            <div className={styles.loadingBox}>Loading…</div>
           ) : stats.total === 0 ? (
-            <div style={styles.emptyState}>
-              <span style={styles.emptyIcon}>📋</span>
-              <p style={styles.emptyText}>No applications yet</p>
-              <Link href="/dashboard/jobs/add" style={styles.emptyLink}>
-                Add your first one →
-              </Link>
+            <div className={styles.emptyState}>
+              <span className={styles.emptyIcon}>📋</span>
+              <p className={styles.emptyText}>No applications yet</p>
+              <Link href="/dashboard/jobs/add" className={styles.emptyLink}>Add your first one →</Link>
             </div>
           ) : (
-            <div style={styles.pipeline}>
+            <div className={styles.pipeline}>
               {[
                 { label: "Applied", value: stats.applied, color: "#8b5cf6" },
-                {
-                  label: "Interviewing",
-                  value: stats.interviewing,
-                  color: "#f59e0b",
-                },
+                { label: "Interviewing", value: stats.interviewing, color: "#f59e0b" },
                 { label: "Offered", value: stats.offered, color: "#10b981" },
                 { label: "Rejected", value: stats.rejected, color: "#ef4444" },
               ].map((s) => (
-                <div key={s.label} style={styles.pipelineRow}>
-                  <div style={styles.pipelineLeft}>
-                    <span
-                      style={{
-                        ...styles.pipelineDot,
-                        backgroundColor: s.color,
-                      }}
-                    />
-                    <span style={styles.pipelineLabel}>{s.label}</span>
+                <div key={s.label} className={styles.pipelineRow}>
+                  <div className={styles.pipelineLeft}>
+                    <span className={styles.pipelineDot} style={{ backgroundColor: s.color }} />
+                    <span className={styles.pipelineLabel}>{s.label}</span>
                   </div>
-                  <div style={styles.pipelineBarWrap}>
+                  <div className={styles.pipelineBarWrap}>
                     <div
+                      className={styles.pipelineBar}
                       style={{
-                        ...styles.pipelineBar,
-                        width:
-                          stats.total > 0
-                            ? `${(s.value / stats.total) * 100}%`
-                            : "0%",
+                        width: stats.total > 0 ? `${(s.value / stats.total) * 100}%` : "0%",
                         backgroundColor: s.color + "30",
-                        borderRight:
-                          s.value > 0 ? `3px solid ${s.color}` : "none",
+                        borderRight: s.value > 0 ? `3px solid ${s.color}` : "none",
                       }}
                     />
                   </div>
-                  <span style={styles.pipelineCount}>{s.value}</span>
+                  <span className={styles.pipelineCount}>{s.value}</span>
                 </div>
               ))}
             </div>
@@ -344,45 +209,39 @@ export default function UserDashboard() {
         </div>
       </div>
 
-      {/* Recent applications */}
-      <div style={styles.card}>
-        <div style={styles.cardHeader}>
-          <h2 style={styles.cardTitle}>Recent Applications</h2>
-          <Link href="/dashboard/jobs" style={styles.viewAll}>
-            View all →
-          </Link>
+      {/* Recent Applications Table */}
+      <div className={styles.card}>
+        <div className={styles.cardHeader}>
+          <h2 className={styles.cardTitle}>Recent Applications</h2>
+          <Link href="/dashboard/jobs" className={styles.viewAll}>View all →</Link>
         </div>
 
         {loading ? (
-          <div style={styles.loadingBox}>Loading…</div>
+          <div className={styles.loadingBox}>Loading…</div>
         ) : recentJobs.length === 0 ? (
-          <div style={styles.emptyState}>
-            <span style={styles.emptyIcon}>🚀</span>
-            <p style={styles.emptyText}>
-              No applications yet — let's change that!
-            </p>
-            <Link href="/dashboard/jobs/add" style={styles.emptyLink}>
-              Add your first application →
-            </Link>
+          <div className={styles.emptyState}>
+            <span className={styles.emptyIcon}>🚀</span>
+            <p className={styles.emptyText}>No applications yet — let's change that!</p>
+            <Link href="/dashboard/jobs/add" className={styles.emptyLink}>Add your first application →</Link>
           </div>
         ) : (
-          <div style={styles.jobTable}>
-            <div style={styles.jobTableHead}>
+          <div className={styles.jobTable}>
+            <div className={styles.jobTableHead}>
               <span style={{ flex: 2 }}>Company / Role</span>
-              <span style={{ flex: 1 }}>Status</span>
+              <span style={{ flex: 1 }} className={styles.hideMobile}>Status</span>
               <span style={{ flex: 1 }}>Applied</span>
               <span style={{ width: 60 }}></span>
             </div>
             {recentJobs.map((job) => (
-              <div key={job._id} className="job-row" style={styles.jobRow}>
+              <div key={job._id} className={styles.jobRow}>
                 <div style={{ flex: 2 }}>
-                  <p style={styles.jobCompany}>{job.company}</p>
-                  <p style={styles.jobRole}>{job.role}</p>
+                  <p className={styles.jobCompany}>{job.company}</p>
+                  <p className={styles.jobRole}>{job.role}</p>
                 </div>
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: 1 }} className={styles.hideMobile}>
                   <span
+                    className={styles.badge}
                     style={{
-                      ...styles.badge,
                       backgroundColor: getStatusColor(job.status) + "18",
                       color: getStatusColor(job.status),
                     }}
@@ -391,22 +250,12 @@ export default function UserDashboard() {
                   </span>
                 </div>
                 <div style={{ flex: 1 }}>
-                  <span style={styles.dateText}>
-                    {job.appliedDate
-                      ? new Date(job.appliedDate).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                        })
-                      : "—"}
+                  <span className={styles.dateText}>
+                    {job.appliedDate ? new Date(job.appliedDate).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "—"}
                   </span>
                 </div>
                 <div style={{ width: 60, textAlign: "right" }}>
-                  <Link
-                    href={`/dashboard/jobs/edit/${job._id}`}
-                    style={styles.editLink}
-                  >
-                    Edit
-                  </Link>
+                  <Link href={`/dashboard/jobs/edit/${job._id}`} className={styles.editLink}>Edit</Link>
                 </div>
               </div>
             ))}
@@ -416,178 +265,3 @@ export default function UserDashboard() {
     </div>
   );
 }
-
-const styles: { [key: string]: React.CSSProperties } = {
-  page: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 24,
-    maxWidth: 1100,
-    margin: "0 auto",
-  },
-
-  // Header
-  pageHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    flexWrap: "wrap",
-    gap: 16,
-  },
-  greeting: {
-    fontFamily: '"Inter", sans-serif',
-    fontSize: 28,
-    fontWeight: 400,
-    color: "#0f172a",
-    margin: "0 0 4px",
-    letterSpacing: "-0.5px",
-  },
-  greetingName: { color: "#2563eb" },
-  greetingSub: { fontSize: 14, color: "#64748b", margin: 0 },
-  addBtn: {
-    padding: "10px 20px",
-    backgroundColor: "#2563eb",
-    color: "#fff",
-    borderRadius: 10,
-    textDecoration: "none",
-    fontWeight: 600,
-    fontSize: 14,
-    transition: "background 0.2s, transform 0.15s",
-    flexShrink: 0,
-  },
-
-  // Stats
-  statsGrid: {
-    display: "grid",  
-    gap: 14,
-  },
-  statCard: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: "16px",
-    border: "1px solid #f1f5f9",
-    boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-    display: "flex",
-    alignItems: "center",
-    gap: 12,
-    minWidth: 0,
-  },
-  statIconBg: { borderRadius: 10, padding: "10px 14px", flexShrink: 0 },
-  statValue: { fontSize: 22, fontWeight: 700, display: "block" },
-  statLabel: { fontSize: 12, fontWeight: 600, color: "#374151", margin: 0 },
-  statSub: { fontSize: 11, color: "#94a3b8", margin: "2px 0 0" },
-
-  // Card
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: 14,
-    padding: "22px 24px",
-    border: "1px solid #f1f5f9",
-    boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-  },
-  cardHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 18,
-  },
-  cardTitle: { fontSize: 15, fontWeight: 600, color: "#0f172a", margin: 0 },
-  cardSub: { fontSize: 12, color: "#94a3b8" },
-  viewAll: {
-    fontSize: 12,
-    color: "#2563eb",
-    textDecoration: "none",
-    fontWeight: 500,
-  },
-  loadingBox: {
-    height: 80,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    color: "#94a3b8",
-    fontSize: 14,
-  },
-
-  // Pipeline
-  pipeline: { display: "flex", flexDirection: "column", gap: 14 },
-  pipelineRow: { display: "flex", alignItems: "center", gap: 12 },
-  pipelineLeft: {
-    display: "flex",
-    alignItems: "center",
-    gap: 8,
-    width: 110,
-    flexShrink: 0,
-  },
-  pipelineDot: { width: 8, height: 8, borderRadius: "50%", flexShrink: 0 },
-  pipelineLabel: { fontSize: 13, color: "#475569", fontWeight: 500 },
-  pipelineBarWrap: {
-    flex: 1,
-    height: 8,
-    backgroundColor: "#f1f5f9",
-    borderRadius: 4,
-    overflow: "hidden",
-  },
-  pipelineBar: {
-    height: "100%",
-    borderRadius: 4,
-    transition: "width 0.5s ease",
-  },
-  pipelineCount: {
-    width: 24,
-    fontSize: 13,
-    fontWeight: 600,
-    color: "#374151",
-    textAlign: "right",
-  },
-
-  // Empty
-  emptyState: {
-    textAlign: "center",
-    padding: "32px 0",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    gap: 8,
-  },
-  emptyIcon: { fontSize: 32 },
-  emptyText: { fontSize: 14, color: "#64748b", margin: 0 },
-  emptyLink: {
-    fontSize: 13,
-    color: "#2563eb",
-    textDecoration: "none",
-    fontWeight: 500,
-  },
-
-  // Job table
-  jobTable: { display: "flex", flexDirection: "column" },
-  jobTableHead: {
-    display: "flex",
-    alignItems: "center",
-    gap: 12,
-    padding: "0 12px 10px",
-    fontSize: 11,
-    fontWeight: 600,
-    color: "#94a3b8",
-    textTransform: "uppercase",
-    letterSpacing: "0.05em",
-    borderBottom: "1px solid #f1f5f9",
-  },
-  jobRow: {
-    display: "flex",
-    alignItems: "center",
-    gap: 12,
-    padding: "12px",
-    borderRadius: 8,
-    transition: "background 0.15s",
-  },
-  jobCompany: { fontSize: 14, fontWeight: 600, color: "#0f172a", margin: 0 },
-  jobRole: { fontSize: 12, color: "#94a3b8", margin: "2px 0 0" },
-  badge: { fontSize: 11, fontWeight: 600, padding: "3px 8px", borderRadius: 6 },
-  dateText: { fontSize: 13, color: "#64748b" },
-  editLink: {
-    fontSize: 12,
-    color: "#2563eb",
-    textDecoration: "none",
-    fontWeight: 500,
-  },
-};

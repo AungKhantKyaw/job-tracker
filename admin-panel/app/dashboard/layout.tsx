@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 
 interface SessionUser {
   name: string;
@@ -101,7 +102,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <aside className={`sidebar${sidebarOpen ? " open" : ""}`} style={styles.sidebar}>
         <div style={styles.sidebarTop}>
           <Link href="/dashboard" style={styles.logo}>
-            <img src="/logo-white.svg" alt="OfferGrid" style={styles.logoImage} />
+            <Image src="/logo-white.svg" alt="OfferGrid" style={styles.logoImage} width={100} height={42} />
           </Link>
         </div>
 
@@ -150,7 +151,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="21" y2="18" />
             </svg>
           </button>
-          <img src="/logo-white.svg" alt="OfferGrid" style={styles.logoImageMobile} />
+          <Image src="/logo-white.svg" alt="OfferGrid" style={styles.logoImageMobile} width={100} height={42} />
           <div style={styles.mobileAvatar}>{initials}</div>
         </div>
 

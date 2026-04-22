@@ -1,0 +1,175 @@
+/* admin-panel/app/dashboard/profile/profile.module.css */
+
+.page {
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-bottom: 40px;
+}
+
+.header { margin-bottom: 4px; }
+
+.title {
+  font-size: 26px;
+  font-weight: 400;
+  color: #0f172a;
+  margin: 0 0 4px;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+}
+
+/* Layout Grids */
+.profileLayout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .profileLayout { grid-template-columns: 240px 1fr; }
+  .formGrid { grid-template-columns: 1fr 1fr; }
+}
+
+/* Cards */
+.avatarCard, .formCard, .dangerCard {
+  background-color: #fff;
+  border-radius: 14px;
+  border: 1px solid #f1f5f9;
+}
+
+.avatarCard {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.formCard { padding: 32px; }
+
+@media (max-width: 640px) {
+  .formCard { padding: 20px; }
+}
+
+.avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 16px;
+  background-color: #e0f2fe;
+  color: #0369a1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.roleBadge {
+  margin-top: 8px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background-color: #f0f9ff;
+  color: #0369a1;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* Forms */
+.section { margin-bottom: 32px; }
+
+.sectionLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.field { display: flex; flex-direction: column; gap: 6px; }
+
+.label { font-size: 12px; font-weight: 600; color: #64748b; }
+
+.inputField {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  font-size: 14px;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.inputField:focus {
+  border-color: #2563eb;
+  outline: none;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.saveBtn {
+  padding: 12px 24px;
+  background-color: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: 100%;
+  max-width: 200px;
+}
+
+.saveBtn:hover:not(:disabled) { background: #1d4ed8; }
+
+/* Danger Zone */
+.dangerCard {
+  padding: 24px;
+  border-color: #fee2e2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+@media (max-width: 640px) {
+  .dangerCard { flex-direction: column; align-items: flex-start; }
+}
+
+.dangerTitle { font-size: 14px; font-weight: 600; color: #dc2626; margin: 0 0 4px; }
+.dangerDesc { font-size: 13px; color: #64748b; margin: 0; }
+
+.dangerBtn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid #fecaca;
+  background-color: #fff;
+  color: #dc2626;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.dangerBtn:hover { background: #fef2f2; }

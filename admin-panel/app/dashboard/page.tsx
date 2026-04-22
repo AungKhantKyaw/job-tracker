@@ -138,13 +138,50 @@ export default function UserDashboard() {
           from { opacity:0; transform:translateY(16px); }
           to   { opacity:1; transform:translateY(0); }
         }
-        .stat-card { animation: fadeUp 0.4s ease both; }
-        .stat-card:nth-child(1) { animation-delay: 0.05s; }
-        .stat-card:nth-child(2) { animation-delay: 0.1s; }
-        .stat-card:nth-child(3) { animation-delay: 0.15s; }
-        .stat-card:nth-child(4) { animation-delay: 0.2s; }
-        .stat-card:nth-child(5) { animation-delay: 0.25s; }
-        .job-row:hover { background: #f8fafc !important; }
+        /* Responsive Grid for Stat Cards */
+          .stats-grid {
+            display: grid;
+            gap: 14px;
+            grid-template-columns: repeat(2, 1fr); /* 2 columns on mobile */
+            width: 100%;
+          }
+
+          @media (min-width: 640px) {
+            .stats-grid { grid-template-columns: repeat(3, 1fr); }
+          }
+
+          @media (min-width: 1024px) {
+            .stats-grid { grid-template-columns: repeat(5, 1fr); }
+          }
+
+          /* Responsive Grid for Chart/Pipeline */
+          .two-col-grid {
+            display: grid;
+            gap: 20px;
+            grid-template-columns: 1fr; /* Stacked on mobile */
+          }
+
+          @media (min-width: 1024px) {
+            .two-col-grid { grid-template-columns: 1.2fr 1fr; }
+          }
+
+          /* Table responsiveness */
+          @media (max-width: 640px) {
+            .hide-mobile { display: none !important; }
+            .job-table-row { flex-wrap: wrap; }
+          }
+
+          @keyframes fadeUp {
+            from { opacity:0; transform:translateY(16px); }
+            to   { opacity:1; transform:translateY(0); }
+          }
+          .stat-card { animation: fadeUp 0.4s ease both; min-width: 0; }
+          .stat-card:nth-child(1) { animation-delay: 0.05s; }
+          .stat-card:nth-child(2) { animation-delay: 0.1s; }
+          .stat-card:nth-child(3) { animation-delay: 0.15s; }
+          .stat-card:nth-child(4) { animation-delay: 0.2s; }
+          .stat-card:nth-child(5) { animation-delay: 0.25s; }
+          .job-row:hover { background: #f8fafc !important; }
       `}</style>
 
       {/* Header */}
@@ -169,43 +206,13 @@ export default function UserDashboard() {
       </div>
 
       {/* Stat cards */}
-      <div style={styles.statsGrid}>
+      <div className="stats-grid">
         {[
-          {
-            label: "Total",
-            value: stats.total,
-            color: "#2563eb",
-            bg: "#eff6ff",
-            sub: "applications",
-          },
-          {
-            label: "Applied",
-            value: stats.applied,
-            color: "#8b5cf6",
-            bg: "#f5f3ff",
-            sub: "waiting",
-          },
-          {
-            label: "Interviewing",
-            value: stats.interviewing,
-            color: "#f59e0b",
-            bg: "#fffbeb",
-            sub: "in progress",
-          },
-          {
-            label: "Offered",
-            value: stats.offered,
-            color: "#10b981",
-            bg: "#ecfdf5",
-            sub: "🎉 congrats",
-          },
-          {
-            label: "Success Rate",
-            value: `${successRate}%`,
-            color: "#0ea5e9",
-            bg: "#f0f9ff",
-            sub: "interview rate",
-          },
+          { label: "Total", value: stats.total, color: "#2563eb", bg: "#eff6ff", sub: "applications" },
+          { label: "Applied", value: stats.applied, color: "#8b5cf6", bg: "#f5f3ff", sub: "waiting" },
+          { label: "Interviewing", value: stats.interviewing, color: "#f59e0b", bg: "#fffbeb", sub: "in progress" },
+          { label: "Offered", value: stats.offered, color: "#10b981", bg: "#ecfdf5", sub: "🎉 congrats" },
+          { label: "Success Rate", value: `${successRate}%`, color: "#0ea5e9", bg: "#f0f9ff", sub: "interview rate" },
         ].map((s) => (
           <div key={s.label} className="stat-card" style={styles.statCard}>
             <div style={{ ...styles.statIconBg, backgroundColor: s.bg }}>
@@ -213,7 +220,7 @@ export default function UserDashboard() {
                 {loading ? "—" : s.value}
               </span>
             </div>
-            <div>
+            <div style={{ overflow: "hidden" }}>
               <p style={styles.statLabel}>{s.label}</p>
               <p style={styles.statSub}>{s.sub}</p>
             </div>
@@ -222,7 +229,7 @@ export default function UserDashboard() {
       </div>
 
       {/* Chart + Recent side by side */}
-      <div style={styles.twoCol}>
+      <div className="two-col-grid">
         {/* Chart */}
         <div style={styles.card}>
           <div style={styles.cardHeader}>
@@ -428,7 +435,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     gap: 16,
   },
   greeting: {
-    fontFamily: '"Instrument Serif", serif',
+    fontFamily: '"Inter", sans-serif',
     fontSize: 28,
     fontWeight: 400,
     color: "#0f172a",
@@ -451,8 +458,7 @@ const styles: { [key: string]: React.CSSProperties } = {
 
   // Stats
   statsGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(5, 1fr)",
+    display: "grid",  
     gap: 14,
   },
   statCard: {
@@ -463,15 +469,13 @@ const styles: { [key: string]: React.CSSProperties } = {
     boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
     display: "flex",
     alignItems: "center",
-    gap: 14,
+    gap: 12,
+    minWidth: 0,
   },
   statIconBg: { borderRadius: 10, padding: "10px 14px", flexShrink: 0 },
   statValue: { fontSize: 22, fontWeight: 700, display: "block" },
   statLabel: { fontSize: 12, fontWeight: 600, color: "#374151", margin: 0 },
   statSub: { fontSize: 11, color: "#94a3b8", margin: "2px 0 0" },
-
-  // Two col
-  twoCol: { display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 20 },
 
   // Card
   card: {

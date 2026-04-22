@@ -5,7 +5,7 @@ export default function LandingPage() {
     <div style={styles.root}>
       {/* Keyframes */}
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
 
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(24px); }
@@ -34,11 +34,20 @@ export default function LandingPage() {
 
       {/* ── Nav ── */}
       <nav style={styles.nav}>
-        <span style={styles.navLogo}>OfferFlow</span>
+        {/* Replaced span with a link and image for the logo */}
+        <Link href="/" style={{ display: 'flex', alignItems: 'center' }}>
+          <img 
+            src="/logo.svg" 
+            alt="OfferGrid Logo" 
+            style={styles.navLogo} 
+          />
+        </Link>
+        
         <div style={styles.navLinks}>
           <a href="#features" className="nav-link" style={styles.navLink}>Features</a>
           <a href="#how" className="nav-link" style={styles.navLink}>How it works</a>
         </div>
+        
         <div style={styles.navActions}>
           <Link href="/login" className="btn-ghost" style={styles.btnGhost}>Log in</Link>
           <Link href="/register" className="btn-primary" style={styles.btnPrimary}>Get started free</Link>
@@ -253,13 +262,14 @@ const styles: { [key: string]: React.CSSProperties } = {
   // ── Nav
   nav: {
     display: "flex", alignItems: "center", justifyContent: "space-between",
-    padding: "20px 48px", position: "sticky", top: 0, zIndex: 100,
+    padding: '1rem 2rem', position: "sticky", top: 0, zIndex: 100,
     borderBottom: "1px solid rgba(255,255,255,0.06)",
     backgroundColor: "rgba(8,11,18,0.85)", backdropFilter: "blur(12px)",
   },
   navLogo: {
-    fontFamily: '"Instrument Serif", serif', fontSize: 22,
-    fontWeight: 400, color: "#fff", letterSpacing: "-0.3px",
+    height: '68px',
+    width: 'auto',
+    cursor: 'pointer',
   },
   navLinks: { display: "flex", gap: 32 },
   navLink: { fontSize: 14, color: "#94a3b8", textDecoration: "none", transition: "color 0.2s" },
@@ -303,7 +313,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderRadius: 20, marginBottom: 28, border: "1px solid rgba(37,99,235,0.25)",
   },
   heroH1: {
-    fontFamily: '"Instrument Serif", serif', fontSize: "clamp(44px, 5vw, 68px)",
+    fontFamily: '"Inter", sans-serif', fontSize: "clamp(44px, 5vw, 68px)",
     fontWeight: 400, lineHeight: 1.1, color: "#f8fafc",
     margin: "0 0 24px", letterSpacing: "-1px",
   },
@@ -373,7 +383,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 12,
   },
   sectionH2: {
-    fontFamily: '"Instrument Serif", serif', fontSize: "clamp(32px, 4vw, 48px)",
+    fontFamily: '"Inter", sans-serif', fontSize: "clamp(32px, 4vw, 48px)",
     fontWeight: 400, color: "#f8fafc", margin: "0 0 56px", letterSpacing: "-0.5px",
   },
 
@@ -401,7 +411,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   step: { position: "relative" },
   stepNum: {
-    display: "block", fontFamily: '"Instrument Serif", serif',
+    display: "block", fontFamily: '"Inter", sans-serif',
     fontSize: 56, color: "rgba(37,99,235,0.2)", lineHeight: 1, marginBottom: 16,
   },
   stepTitle: { fontSize: 18, fontWeight: 600, color: "#f1f5f9", margin: "0 0 10px" },
@@ -420,7 +430,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   ctaBannerInner: { maxWidth: 640, margin: "0 auto" },
   ctaH2: {
-    fontFamily: '"Instrument Serif", serif', fontSize: "clamp(28px, 4vw, 44px)",
+    fontFamily: '"Inter", sans-serif', fontSize: "clamp(28px, 4vw, 44px)",
     fontWeight: 400, color: "#f8fafc", margin: "0 0 16px", letterSpacing: "-0.5px",
   },
   ctaSub: { fontSize: 16, color: "#64748b", margin: "0 0 36px" },
@@ -433,7 +443,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     backgroundColor: "#080b12",
   },
   footerLogo: {
-    fontFamily: '"Instrument Serif", serif', fontSize: 18, color: "#475569",
+    fontFamily: '"Inter", sans-serif', fontSize: 18, color: "#475569",
   },
   footerText: { fontSize: 12, color: "#334155", margin: 0 },
   footerLinks: { display: "flex", gap: 20 },

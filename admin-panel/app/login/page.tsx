@@ -436,7 +436,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     marginBottom: 16,
   },
   verifyTitle: {
-    fontFamily: '"Instrument Serif", serif',
+    fontFamily: '"Inter", sans-serif',
     fontSize: 24,
     fontWeight: 400,
     color: "#f8fafc",
@@ -499,7 +499,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     marginBottom: "16px",
   },
   title: {
-    fontFamily: '"Instrument Serif", serif',
+    fontFamily: '"Inter", sans-serif',
     fontSize: "26px",
     fontWeight: 400,
     color: "#f1f5f9",

@@ -211,7 +211,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     position: "absolute",
     top: 24,
     left: 32,
-    fontFamily: '"Instrument Serif", serif',
+    fontFamily: '"Inter", sans-serif',
     fontSize: 20,
     color: "#f1f5f9",
     textDecoration: "none",
@@ -247,7 +247,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     margin: "0 auto 20px",
   },
   title: {
-    fontFamily: '"Instrument Serif", serif',
+    fontFamily: '"Inter", sans-serif',
     fontSize: 26,
     fontWeight: 400,
     color: "#f8fafc",

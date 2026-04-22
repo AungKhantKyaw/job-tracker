@@ -306,7 +306,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     padding: "20px 48px",
   },
   navLogo: {
-    fontFamily: '"Instrument Serif", serif',
+    fontFamily: '"Inter", sans-serif',
     fontSize: 20,
     color: "#f1f5f9",
     textDecoration: "none",
@@ -331,7 +331,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   cardHeader: { textAlign: "center", marginBottom: 28 },
   title: {
-    fontFamily: '"Instrument Serif", serif',
+    fontFamily: '"Inter", sans-serif',
     fontSize: 28,
     fontWeight: 400,
     color: "#f8fafc",

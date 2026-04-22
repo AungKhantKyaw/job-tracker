@@ -411,7 +411,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
   },
   title: {
-    fontFamily: '"Instrument Serif", serif',
+    fontFamily: '"Inter", sans-serif',
     fontSize: 24,
     fontWeight: 400,
     color: "#0f172a",

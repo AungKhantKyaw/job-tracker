@@ -281,7 +281,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     gap: 12,
   },
   title: {
-    fontFamily: '"Instrument Serif", serif',
+    fontFamily: '"Inter", sans-serif',
     fontSize: 26,
     fontWeight: 400,
     color: "#0f172a",

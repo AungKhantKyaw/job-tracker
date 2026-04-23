@@ -53,7 +53,7 @@ export default function VerifyEmailPage() {
       <div style={styles.bg} aria-hidden="true" />
 
       <Link href="/" style={styles.logo}>
-        JobTracker
+        OfferGrid
       </Link>
 
       <div className="card" style={styles.card}>

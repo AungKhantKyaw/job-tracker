@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useToast } from "@/components/ToastProvider";
+import styles from "./addJob.module.css";
 
 interface Status {
   _id: string;
@@ -102,22 +103,22 @@ export default function UserAddJobPage() {
   };
 
   return (
-    <div style={styles.page}>
-      <div style={styles.breadcrumb}>
-        <Link href="/dashboard/jobs" style={styles.backLink}>
+    <div className={styles.page}>
+      <div className={styles.breadcrumb}>
+        <Link href="/dashboard/jobs" className={styles.backLink}>
           ← Back to Applications
         </Link>
       </div>
 
-      <div style={styles.card}>
-        <h1 style={styles.title}>Add New Application</h1>
-        <p style={styles.subtitle}>
+      <div className={styles.card}>
+        <h1 className={styles.title}>Add New Application</h1>
+        <p className={styles.subtitle}>
           Track a new job you've applied to or plan to apply for
         </p>
 
         <form onSubmit={handleSubmit}>
           <Section label="General Information">
-            <div style={styles.grid}>
+            <div className={styles.grid}>
               <Field label="Company *">
                 <input
                   name="company"
@@ -125,7 +126,7 @@ export default function UserAddJobPage() {
                   value={formData.company}
                   onChange={handleChange}
                   placeholder="e.g. Stripe"
-                  style={styles.input}
+                  className={styles.input}
                 />
               </Field>
               <Field label="Role *">
@@ -135,7 +136,7 @@ export default function UserAddJobPage() {
                   value={formData.role}
                   onChange={handleChange}
                   placeholder="e.g. Frontend Engineer"
-                  style={styles.input}
+                  className={styles.input}
                 />
               </Field>
               <Field label="Status">
@@ -143,7 +144,7 @@ export default function UserAddJobPage() {
                   name="status"
                   value={formData.status}
                   onChange={handleChange}
-                  style={styles.input}
+                  className={styles.input}
                 >
                   {statuses.map((s) => (
                     <option key={s._id} value={s._id}>
@@ -158,21 +159,21 @@ export default function UserAddJobPage() {
                   name="appliedDate"
                   value={formData.appliedDate}
                   onChange={handleChange}
-                  style={styles.input}
+                  className={styles.input}
                 />
               </Field>
             </div>
           </Section>
 
           <Section label="Job Details">
-            <div style={styles.grid}>
+            <div className={styles.grid}>
               <Field label="Location">
                 <input
                   name="location"
                   value={formData.location}
                   onChange={handleChange}
                   placeholder="Remote / City"
-                  style={styles.input}
+                  className={styles.input}
                 />
               </Field>
               <Field label="Salary Range">
@@ -181,29 +182,29 @@ export default function UserAddJobPage() {
                   value={formData.salaryRange}
                   onChange={handleChange}
                   placeholder="e.g. $80k–$100k"
-                  style={styles.input}
+                  className={styles.input}
                 />
               </Field>
-              <Field label="Job Post URL" style={{ gridColumn: "span 2" }}>
+              <Field label="Job Post URL" className={styles.spanFull}>
                 <input
                   name="link"
                   value={formData.link}
                   onChange={handleChange}
                   placeholder="https://…"
-                  style={styles.input}
+                  className={styles.input}
                 />
               </Field>
             </div>
           </Section>
 
           <Section label="Contact Person (optional)">
-            <div style={styles.grid}>
+            <div className={styles.grid}>
               <Field label="Name">
                 <input
                   name="contactPerson"
                   value={formData.contactPerson}
                   onChange={handleChange}
-                  style={styles.input}
+                  className={styles.input}
                 />
               </Field>
               <Field label="Email">
@@ -212,7 +213,7 @@ export default function UserAddJobPage() {
                   type="email"
                   value={formData.contactEmail}
                   onChange={handleChange}
-                  style={styles.input}
+                  className={styles.input}
                 />
               </Field>
               <Field label="Phone">
@@ -221,7 +222,7 @@ export default function UserAddJobPage() {
                   type="tel"
                   value={formData.contactPhone}
                   onChange={handleChange}
-                  style={styles.input}
+                  className={styles.input}
                 />
               </Field>
             </div>
@@ -234,7 +235,7 @@ export default function UserAddJobPage() {
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
-                  style={styles.textarea}
+                  className={styles.textarea}
                 />
               </Field>
               <Field label="Personal Notes">
@@ -242,24 +243,21 @@ export default function UserAddJobPage() {
                   name="notes"
                   value={formData.notes}
                   onChange={handleChange}
-                  style={{ ...styles.textarea, minHeight: 80 }}
+                  className={styles.textarea}
+                  style={{ minHeight: 80 }}
                 />
               </Field>
             </div>
           </Section>
 
-          <div style={styles.actions}>
-            <Link href="/dashboard/jobs" style={styles.cancelBtn}>
+          <div className={styles.actions}>
+            <Link href="/dashboard/jobs" className={styles.cancelBtn}>
               Cancel
             </Link>
             <button
               type="submit"
               disabled={loading}
-              style={{
-                ...styles.submitBtn,
-                opacity: loading ? 0.7 : 1,
-                cursor: loading ? "not-allowed" : "pointer",
-              }}
+              className={styles.submitBtn}
             >
               {loading ? "Saving…" : "Save Application"}
             </button>
@@ -270,6 +268,7 @@ export default function UserAddJobPage() {
   );
 }
 
+// Helper Components now use CSS Module classes
 function Section({
   label,
   children,
@@ -278,21 +277,8 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div style={{ marginBottom: 28 }}>
-      <p
-        style={{
-          fontSize: 11,
-          fontWeight: 600,
-          color: "#94a3b8",
-          textTransform: "uppercase",
-          letterSpacing: "0.08em",
-          margin: "0 0 14px",
-          paddingBottom: 8,
-          borderBottom: "1px solid #f1f5f9",
-        }}
-      >
-        {label}
-      </p>
+    <div className={styles.sectionContainer}>
+      <p className={styles.sectionLabel}>{label}</p>
       {children}
     </div>
   );
@@ -301,85 +287,16 @@ function Section({
 function Field({
   label,
   children,
-  style,
+  className,
 }: {
   label: string;
   children: React.ReactNode;
-  style?: React.CSSProperties;
+  className?: string;
 }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 6, ...style }}>
-      <label style={{ fontSize: 12, fontWeight: 600, color: "#64748b" }}>
-        {label}
-      </label>
+    <div className={`${styles.fieldContainer} ${className || ""}`}>
+      <label className={styles.fieldLabel}>{label}</label>
       {children}
     </div>
   );
 }
-
-const styles: { [key: string]: React.CSSProperties } = {
-  page: { maxWidth: 820, margin: "0 auto" },
-  breadcrumb: { marginBottom: 16 },
-  backLink: { fontSize: 13, color: "#64748b", textDecoration: "none" },
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: 14,
-    padding: "32px 36px",
-    border: "1px solid #f1f5f9",
-    boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-  },
-  title: {
-    fontFamily: '"Inter", sans-serif',
-    fontSize: 24,
-    fontWeight: 400,
-    color: "#0f172a",
-    margin: "0 0 4px",
-    letterSpacing: "-0.4px",
-  },
-  subtitle: { fontSize: 14, color: "#64748b", margin: "0 0 28px" },
-  grid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 },
-  input: {
-    padding: "10px 12px",
-    borderRadius: 8,
-    border: "1px solid #e2e8f0",
-    fontSize: 14,
-    backgroundColor: "#fff",
-    width: "100%",
-    boxSizing: "border-box",
-  },
-  textarea: {
-    padding: "10px 12px",
-    borderRadius: 8,
-    border: "1px solid #e2e8f0",
-    fontSize: 14,
-    minHeight: 100,
-    resize: "vertical",
-    width: "100%",
-    boxSizing: "border-box",
-  },
-  actions: {
-    display: "flex",
-    justifyContent: "flex-end",
-    gap: 10,
-    marginTop: 8,
-  },
-  cancelBtn: {
-    padding: "10px 20px",
-    borderRadius: 8,
-    border: "1px solid #e2e8f0",
-    color: "#64748b",
-    fontSize: 14,
-    fontWeight: 500,
-    textDecoration: "none",
-    backgroundColor: "#fff",
-  },
-  submitBtn: {
-    padding: "10px 24px",
-    borderRadius: 8,
-    backgroundColor: "#2563eb",
-    color: "#fff",
-    border: "none",
-    fontSize: 14,
-    fontWeight: 600,
-  },
-};

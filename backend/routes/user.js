@@ -73,7 +73,7 @@ router.post("/register", async (req, res) => {
     const verifyUrl = `${process.env.CLIENT_URL}/verify-email?token=${rawToken}`;
     await sendEmail({
       to: newUser.email,
-      subject: "Verify your JobTracker email",
+      subject: "Verify your OfferGrid email",
       html: verifyEmailTemplate(newUser.name, verifyUrl),
     });
 

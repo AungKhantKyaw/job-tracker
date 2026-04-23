@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useToast } from "@/components/ToastProvider";
+import styles from "./jobs.module.css";
 
 interface Status {
   _id: string;
@@ -109,41 +110,35 @@ export default function UserJobsPage() {
   };
 
   return (
-    <div style={styles.page}>
-      <style>{`
-        .job-row:hover { background: #f8fafc !important; }
-        .filter-input:focus { border-color: #2563eb !important; outline: none; }
-      `}</style>
-
+    <div className={styles.page}>
       {/* Header */}
-      <div style={styles.header}>
+      <div className={styles.header}>
         <div>
-          <h1 style={styles.title}>My Applications</h1>
-          <p style={styles.subtitle}>
+          <h1 className={styles.title}>My Applications</h1>
+          <p className={styles.subtitle}>
             {loading
               ? "Loading…"
               : `${jobs.length} application${jobs.length !== 1 ? "s" : ""} tracked`}
           </p>
         </div>
-        <Link href="/dashboard/jobs/add" style={styles.addBtn}>
+        <Link href="/dashboard/jobs/add" className={styles.addBtn}>
           + Add Application
         </Link>
       </div>
 
       {/* Filters */}
-      <div style={styles.filterRow}>
+      <div className={styles.filterRow}>
         <input
           type="text"
           placeholder="Search company or role…"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="filter-input"
-          style={styles.searchInput}
+          className={styles.searchInput}
         />
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          style={styles.filterSelect}
+          className={styles.filterSelect}
         >
           <option value="All">All Statuses</option>
           {statuses.map((s) => (
@@ -154,48 +149,46 @@ export default function UserJobsPage() {
         </select>
       </div>
 
-      {error && <div style={styles.errorBox}>{error}</div>}
+      {error && <div className={styles.errorBox}>{error}</div>}
 
       {/* Table */}
-      <div style={styles.tableCard}>
+      <div className={styles.tableCard}>
         {loading ? (
-          <div style={styles.centerMsg}>Loading applications…</div>
+          <div className={styles.centerMsg}>Loading applications…</div>
         ) : filteredJobs.length === 0 ? (
-          <div style={styles.emptyState}>
+          <div className={styles.emptyState}>
             <span style={{ fontSize: 36 }}>📋</span>
-            <p
-              style={{ color: "#64748b", margin: "8px 0 4px", fontWeight: 500 }}
-            >
+            <p style={{ color: "#64748b", margin: "8px 0 4px", fontWeight: 500 }}>
               No applications found
             </p>
-            <Link href="/dashboard/jobs/add" style={styles.emptyLink}>
+            <Link href="/dashboard/jobs/add" className={styles.emptyLink}>
               Add your first one →
             </Link>
           </div>
         ) : (
           <>
-            <table style={styles.table}>
+            <table className={styles.table}>
               <thead>
-                <tr style={styles.thead}>
-                  <th style={styles.th}>Company</th>
-                  <th style={styles.th}>Role</th>
-                  <th style={styles.th}>Status</th>
-                  <th style={styles.th}>Applied</th>
-                  <th style={styles.th}>Actions</th>
+                <tr className={styles.thead}>
+                  <th className={styles.th}>Company</th>
+                  <th className={styles.th}>Role</th>
+                  <th className={styles.th}>Status</th>
+                  <th className={styles.th}>Applied</th>
+                  <th className={styles.th}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredJobs.map((job) => (
-                  <tr key={job._id} className="job-row" style={styles.tr}>
-                    <td style={styles.td}>
-                      <p style={styles.company}>{job.company}</p>
-                      <p style={styles.location}>{job.location || "Remote"}</p>
+                  <tr key={job._id} className={styles.tr}>
+                    <td className={styles.td}>
+                      <p className={styles.company}>{job.company}</p>
+                      <p className={styles.location}>{job.location || "Remote"}</p>
                     </td>
-                    <td style={styles.td}>{job.role}</td>
-                    <td style={styles.td}>
+                    <td className={styles.td}>{job.role}</td>
+                    <td className={styles.td}>
                       <span
+                        className={styles.badge}
                         style={{
-                          ...styles.badge,
                           backgroundColor: getStatusColor(job.status) + "18",
                           color: getStatusColor(job.status),
                         }}
@@ -203,24 +196,24 @@ export default function UserJobsPage() {
                         {getStatusLabel(job.status)}
                       </span>
                     </td>
-                    <td style={styles.td}>
+                    <td className={styles.td}>
                       {job.appliedDate
                         ? new Date(job.appliedDate).toLocaleDateString()
                         : "—"}
                     </td>
-                    <td style={styles.td}>
-                      <div style={styles.actions}>
+                    <td className={styles.td}>
+                      <div className={styles.actions}>
                         <Link
                           href={`/dashboard/jobs/edit/${job._id}`}
-                          style={styles.editBtn}
+                          className={styles.editBtn}
                         >
                           Edit
                         </Link>
                         <button
                           onClick={() => handleDelete(job._id)}
                           disabled={deletingId === job._id}
+                          className={styles.deleteBtn}
                           style={{
-                            ...styles.deleteBtn,
                             opacity: deletingId === job._id ? 0.5 : 1,
                           }}
                         >
@@ -235,24 +228,21 @@ export default function UserJobsPage() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div style={styles.pagination}>
+              <div className={styles.pagination}>
                 <button
                   disabled={page === 1}
                   onClick={() => setPage((p) => p - 1)}
-                  style={{ ...styles.pageBtn, opacity: page === 1 ? 0.4 : 1 }}
+                  className={styles.pageBtn}
                 >
                   ← Prev
                 </button>
-                <span style={styles.pageInfo}>
+                <span className={styles.pageInfo}>
                   Page {page} of {totalPages}
                 </span>
                 <button
                   disabled={page === totalPages}
                   onClick={() => setPage((p) => p + 1)}
-                  style={{
-                    ...styles.pageBtn,
-                    opacity: page === totalPages ? 0.4 : 1,
-                  }}
+                  className={styles.pageBtn}
                 >
                   Next →
                 </button>
@@ -264,145 +254,3 @@ export default function UserJobsPage() {
     </div>
   );
 }
-
-const styles: { [key: string]: React.CSSProperties } = {
-  page: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 20,
-    maxWidth: 1100,
-    margin: "0 auto",
-  },
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    flexWrap: "wrap",
-    gap: 12,
-  },
-  title: {
-    fontFamily: '"Inter", sans-serif',
-    fontSize: 26,
-    fontWeight: 400,
-    color: "#0f172a",
-    margin: "0 0 4px",
-    letterSpacing: "-0.4px",
-  },
-  subtitle: { fontSize: 14, color: "#64748b", margin: 0 },
-  addBtn: {
-    padding: "10px 20px",
-    backgroundColor: "#2563eb",
-    color: "#fff",
-    borderRadius: 10,
-    textDecoration: "none",
-    fontWeight: 600,
-    fontSize: 14,
-    flexShrink: 0,
-  },
-  filterRow: { display: "flex", gap: 12, flexWrap: "wrap" },
-  searchInput: {
-    flex: 1,
-    minWidth: 220,
-    padding: "10px 14px",
-    borderRadius: 8,
-    border: "1px solid #e2e8f0",
-    fontSize: 14,
-    backgroundColor: "#fff",
-    transition: "border-color 0.2s",
-  },
-  filterSelect: {
-    padding: "10px 14px",
-    borderRadius: 8,
-    border: "1px solid #e2e8f0",
-    fontSize: 14,
-    backgroundColor: "#fff",
-    cursor: "pointer",
-    minWidth: 150,
-  },
-  errorBox: {
-    padding: 14,
-    backgroundColor: "#fef2f2",
-    color: "#dc2626",
-    borderRadius: 8,
-    border: "1px solid #fecaca",
-    fontSize: 14,
-  },
-  tableCard: {
-    backgroundColor: "#fff",
-    borderRadius: 14,
-    border: "1px solid #f1f5f9",
-    boxShadow: "0 1px 4px rgba(0,0,0,0.04)",
-    overflow: "hidden",
-  },
-  centerMsg: {
-    padding: 60,
-    textAlign: "center",
-    color: "#94a3b8",
-    fontSize: 14,
-  },
-  emptyState: {
-    padding: "48px 20px",
-    textAlign: "center",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    gap: 4,
-  },
-  emptyLink: {
-    fontSize: 13,
-    color: "#2563eb",
-    textDecoration: "none",
-    fontWeight: 500,
-    marginTop: 4,
-  },
-  table: { width: "100%", borderCollapse: "collapse" },
-  thead: { backgroundColor: "#f8fafc", borderBottom: "1px solid #f1f5f9" },
-  th: {
-    padding: "13px 16px",
-    fontSize: 11,
-    fontWeight: 600,
-    color: "#94a3b8",
-    textTransform: "uppercase",
-    letterSpacing: "0.05em",
-    textAlign: "left",
-  },
-  tr: { borderBottom: "1px solid #f8fafc", transition: "background 0.15s" },
-  td: { padding: "14px 16px", fontSize: 14, color: "#374151" },
-  company: { fontWeight: 600, color: "#0f172a", margin: 0 },
-  location: { fontSize: 12, color: "#94a3b8", margin: "2px 0 0" },
-  badge: { fontSize: 11, fontWeight: 600, padding: "3px 9px", borderRadius: 6 },
-  actions: { display: "flex", gap: 12, alignItems: "center" },
-  editBtn: {
-    fontSize: 13,
-    color: "#2563eb",
-    textDecoration: "none",
-    fontWeight: 600,
-  },
-  deleteBtn: {
-    fontSize: 13,
-    color: "#ef4444",
-    background: "none",
-    border: "none",
-    cursor: "pointer",
-    fontWeight: 600,
-    padding: 0,
-  },
-  pagination: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 16,
-    padding: "16px",
-    borderTop: "1px solid #f1f5f9",
-  },
-  pageBtn: {
-    padding: "7px 14px",
-    borderRadius: 6,
-    border: "1px solid #e2e8f0",
-    backgroundColor: "#fff",
-    cursor: "pointer",
-    fontSize: 13,
-    fontWeight: 500,
-  },
-  pageInfo: { fontSize: 13, color: "#64748b" },
-};

@@ -43,7 +43,7 @@ const AdminHeader = () => {
   return (
     <header style={styles.header}>
       <div style={styles.leftSection}>
-        <h1 style={styles.logo}>JobTracker</h1>
+        <h1 style={styles.logo}>OfferGrid</h1>
         {userName && (
           <span style={styles.welcomeText}>
             Welcome, <strong>{userName}</strong>

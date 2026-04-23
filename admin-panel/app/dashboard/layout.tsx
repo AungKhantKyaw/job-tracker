@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import styles from "./layout.module.css";
 
 interface SessionUser {
   name: string;
@@ -72,53 +73,32 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const initials = user?.name?.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase() || "?";
 
   return (
-    <div style={styles.root}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&display=swap');
-        
-        .nav-item:hover { background: #f1f5f9 !important; }
-        .nav-item.active { background: #f0f7ff !important; color: #2563eb !important; }
-        .nav-item.active svg { stroke: #2563eb; }
-        .logout-btn:hover { background: #fef2f2 !important; color: #dc2626 !important; }
-
-        /* Responsive Logic */
-        @media (max-width: 768px) {
-          .sidebar { 
-            position: fixed !important;
-            transform: translateX(-100%); 
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-            box-shadow: 10px 0 15px -3px rgba(0,0,0,0.1);
-          }
-          .sidebar.open { transform: translateX(0) !important; }
-          .mobile-topbar { display: flex !important; }
-          .main-content { padding: 16px !important; }
-        }
-      `}</style>
+    <div className={styles.root}>      
+      <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet" />
 
       {sidebarOpen && (
-        <div style={styles.overlay} onClick={() => setSidebarOpen(false)} aria-hidden="true" />
+        <div className={styles.overlay} onClick={() => setSidebarOpen(false)} aria-hidden="true" />
       )}
 
-      <aside className={`sidebar${sidebarOpen ? " open" : ""}`} style={styles.sidebar}>
-        <div style={styles.sidebarTop}>
-          <Link href="/dashboard" style={styles.logo}>
-            <Image src="/logo-white.svg" alt="OfferGrid" style={styles.logoImage} width={100} height={42} />
+      <aside className={`${styles.sidebar} ${sidebarOpen ? styles.sidebarOpen : ""}`}>
+        <div className={styles.sidebarTop}>
+          <Link href="/dashboard">
+            <Image src="/logo-white.svg" alt="OfferGrid" className={styles.logoImage} width={100} height={42} />
           </Link>
         </div>
 
-        <nav style={styles.nav}>
-          <p style={styles.navSection}>Menu</p>
+        <nav className={styles.nav}>
+          <p className={styles.navSection}>Menu</p>
           {NAV_ITEMS.map((item) => {
             const isActive = pathname === item.href;
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`nav-item${isActive ? " active" : ""}`}
-                style={{ ...styles.navItem, ...(isActive ? styles.navItemActive : {}) }}
+                className={`${styles.navItem} ${isActive ? styles.navItemActive : ""}`}
                 onClick={() => setSidebarOpen(false)}
               >
-                <span style={{ ...styles.navIcon, ...(isActive ? { color: "#2563eb" } : {}) }}>
+                <span className={styles.navIcon}>
                   {item.icon}
                 </span>
                 {item.label}
@@ -127,15 +107,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           })}
         </nav>
 
-        <div style={styles.sidebarFooter}>
-          <div style={styles.userRow}>
-            <div style={styles.avatar}>{initials}</div>
-            <div style={styles.userInfo}>
-              <span style={styles.userName}>{user?.name || "—"}</span>
-              <span style={styles.userEmail}>{user?.email || "—"}</span>
+        <div className={styles.sidebarFooter}>
+          <div className={styles.userRow}>
+            <div className={styles.avatar}>{initials}</div>
+            <div className={styles.userInfo}>
+              <span className={styles.userName}>{user?.name || "—"}</span>
+              <span className={styles.userEmail}>{user?.email || "—"}</span>
             </div>
           </div>
-          <button className="logout-btn" onClick={handleLogout} style={styles.logoutBtn}>
+          <button className={styles.logoutBtn} onClick={handleLogout}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
             </svg>
@@ -144,177 +124,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </aside>
 
-      <main style={styles.main}>
-        <div className="mobile-topbar" style={styles.mobileTopbar}>
-          <button style={styles.hamburger} onClick={() => setSidebarOpen(true)} aria-label="Open menu">
+      <main className={styles.main}>
+        <div className={styles.mobileTopbar}>
+          <button className={styles.hamburger} onClick={() => setSidebarOpen(true)} aria-label="Open menu">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="21" y2="18" />
             </svg>
           </button>
-          <Image src="/logo-white.svg" alt="OfferGrid" style={styles.logoImageMobile} width={100} height={42} />
-          <div style={styles.mobileAvatar}>{initials}</div>
+          <Image src="/logo-white.svg" alt="OfferGrid" className={styles.logoImageMobile} width={100} height={42} />
+          <div className={styles.mobileAvatar}>{initials}</div>
         </div>
 
-        <div className="main-content" style={styles.content}>
+        <div className={styles.content}>
           {children}
         </div>
       </main>
     </div>
   );
 }
-
-const styles: { [key: string]: React.CSSProperties } = {
-  root: {
-    display: "flex",
-    minHeight: "100vh",
-    backgroundColor: "#f8fafc",
-    fontFamily: '"Sora", system-ui, sans-serif',
-  },
-  overlay: {
-    position: "fixed",
-    inset: 0,
-    backgroundColor: "rgba(15, 23, 42, 0.5)",
-    backdropFilter: "blur(4px)",
-    zIndex: 40,
-  },
-  sidebar: {
-    width: 260,
-    flexShrink: 0,
-    backgroundColor: "#ffffff",
-    borderRight: "1px solid #e2e8f0",
-    display: "flex",
-    flexDirection: "column",
-    position: "sticky",
-    top: 0,
-    height: "100vh",
-    zIndex: 50,
-  },
-  sidebarTop: {
-    padding: "24px 20px",
-    borderBottom: "1px solid #f1f5f9",
-  },
-  logoImage: {
-    height: "60px",
-    width: "auto",
-    filter: "brightness(0) saturate(100%) invert(13%) sepia(21%) font-weight(700) saturate(3483%) hue-rotate(202deg) brightness(96%) contrast(95%)",
-  },
-  logoImageMobile: {
-    height: "32px",
-    width: "auto",
-    filter: "brightness(0) saturate(100%) invert(13%) sepia(21%)",
-  },
-  nav: {
-    flex: 1,
-    padding: "20px 12px",
-    display: "flex",
-    flexDirection: "column",
-    gap: 4,
-  },
-  navSection: {
-    fontSize: 11,
-    fontWeight: 600,
-    color: "#94a3b8",
-    textTransform: "uppercase",
-    letterSpacing: "0.05em",
-    padding: "0 12px",
-    marginBottom: 8,
-  },
-  navItem: {
-    display: "flex",
-    alignItems: "center",
-    gap: 12,
-    padding: "10px 12px",
-    borderRadius: 8,
-    fontSize: 14,
-    fontWeight: 500,
-    color: "#475569",
-    textDecoration: "none",
-    transition: "all 0.2s",
-  },
-  navItemActive: { color: "#2563eb", background: "#f0f7ff" },
-  navIcon: { color: "#94a3b8", display: "flex", flexShrink: 0 },
-  sidebarFooter: {
-    padding: "16px 12px",
-    borderTop: "1px solid #f1f5f9",
-    display: "flex",
-    flexDirection: "column",
-    gap: 8,
-  },
-  userRow: { display: "flex", alignItems: "center", gap: 12, padding: "0 8px" },
-  avatar: {
-    width: 38,
-    height: 38,
-    borderRadius: 10,
-    backgroundColor: "#e0f2fe",
-    color: "#0369a1",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: 13,
-    fontWeight: 700,
-  },
-  userInfo: { display: "flex", flexDirection: "column", overflow: "hidden" },
-  userName: { fontSize: 14, fontWeight: 600, color: "#0f172a", textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" },
-  userEmail: { fontSize: 12, color: "#64748b", textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" },
-  logoutBtn: {
-    display: "flex",
-    alignItems: "center",
-    gap: 8,
-    padding: "10px 12px",
-    borderRadius: 8,
-    border: "none",
-    background: "none",
-    cursor: "pointer",
-    fontSize: 14,
-    fontWeight: 500,
-    color: "#64748b",
-    width: "100%",
-  },
-  main: { 
-    flex: 1, 
-    display: "flex", 
-    flexDirection: "column", 
-    minWidth: 0,
-    width: "100%" 
-  },
-  mobileTopbar: {
-    display: "none", // Hidden on desktop
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: "12px 16px",
-    borderBottom: "1px solid #e2e8f0",
-    backgroundColor: "#fff",
-    position: "sticky",
-    top: 0,
-    zIndex: 30,
-  },
-  hamburger: {
-    background: "#f8fafc",
-    border: "1px solid #e2e8f0",
-    borderRadius: "6px",
-    cursor: "pointer",
-    color: "#475569",
-    padding: "6px",
-    display: "flex",
-    alignItems: "center",
-  },
-  mobileAvatar: {
-    width: 32,
-    height: 32,
-    borderRadius: "50%",
-    backgroundColor: "#e0f2fe",
-    color: "#0369a1",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: 11,
-    fontWeight: 700,
-  },
-  content: { 
-    flex: 1, 
-    padding: "40px",
-    maxWidth: "1200px",
-    margin: "0 auto",
-    width: "100%"
-  },
-};

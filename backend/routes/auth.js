@@ -42,7 +42,7 @@ router.post("/send-verification", async (req, res) => {
     const verifyUrl = `${CLIENT_URL}/verify-email?token=${rawToken}`;
     await sendEmail({
       to: user.email,
-      subject: "Verify your OfferFlow email",
+      subject: "Verify your OfferGrid email",
       html: verifyEmailTemplate(user.name, verifyUrl),
     });
 
@@ -108,7 +108,7 @@ router.post("/forgot-password", async (req, res) => {
     const resetUrl = `${CLIENT_URL}/reset-password/${rawToken}`;
     await sendEmail({
       to: user.email,
-      subject: "Reset your OfferFlow password",
+      subject: "Reset your OfferGrid password",
       html: resetPasswordTemplate(user.name, resetUrl),
     });
 

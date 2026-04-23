@@ -61,7 +61,7 @@ export default function LandingPage() {
                 <span className={styles.mockDot} style={{ background: "#ef4444" }} />
                 <span className={styles.mockDot} style={{ background: "#f59e0b" }} />
                 <span className={styles.mockDot} style={{ background: "#22c55e" }} />
-                <span className={styles.mockTitle}>OfferFlow — Dashboard</span>
+                <span className={styles.mockTitle}>OfferGrid — Dashboard</span>
               </div>
               <div className={styles.mockBody}>
                 <div className={styles.mockStats}>
@@ -169,8 +169,8 @@ export default function LandingPage() {
 
       {/* ── Footer ── */}
       <footer className={styles.footer}>
-        <span className={styles.footerLogo}>OfferFlow</span>
-        <p className={styles.footerText}>© {new Date().getFullYear()} OfferFlow. All rights reserved.</p>
+        <span className={styles.footerLogo}>OfferGrid</span>
+        <p className={styles.footerText}>© {new Date().getFullYear()} OfferGrid. All rights reserved.</p>
         <div className={styles.footerLinks}>
           <Link href="/login" className={styles.footerLink}>Log in</Link>
           <Link href="/register" className={styles.footerLink}>Sign up</Link>

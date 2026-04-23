@@ -19,7 +19,7 @@ const transporter = nodemailer.createTransport({
  */
 const sendEmail = async ({ to, subject, html }) => {
   const mailOptions = {
-    from: `"${process.env.EMAIL_FROM_NAME || "OfferFlow"}" <${process.env.EMAIL_USER}>`,
+    from: `"${process.env.EMAIL_FROM_NAME || "OfferGrid"}" <${process.env.EMAIL_USER}>`,
     to,
     subject,
     html,
@@ -36,7 +36,7 @@ const verifyEmailTemplate = (name, verifyUrl) => `
 <body style="margin:0;padding:0;background:#f8fafc;font-family:'Segoe UI',sans-serif;">
   <div style="max-width:520px;margin:40px auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;">
     <div style="background:#2563eb;padding:28px 32px;">
-      <h1 style="color:#fff;margin:0;font-size:20px;font-weight:700;">OfferFlow</h1>
+      <h1 style="color:#fff;margin:0;font-size:20px;font-weight:700;">OfferGrid</h1>
     </div>
     <div style="padding:32px;">
       <h2 style="color:#0f172a;font-size:22px;margin:0 0 8px;">Verify your email</h2>
@@ -61,7 +61,7 @@ const resetPasswordTemplate = (name, resetUrl) => `
 <body style="margin:0;padding:0;background:#f8fafc;font-family:'Segoe UI',sans-serif;">
   <div style="max-width:520px;margin:40px auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;">
     <div style="background:#0f172a;padding:28px 32px;">
-      <h1 style="color:#fff;margin:0;font-size:20px;font-weight:700;">OfferFlow</h1>
+      <h1 style="color:#fff;margin:0;font-size:20px;font-weight:700;">OfferGrid</h1>
     </div>
     <div style="padding:32px;">
       <h2 style="color:#0f172a;font-size:22px;margin:0 0 8px;">Reset your password</h2>

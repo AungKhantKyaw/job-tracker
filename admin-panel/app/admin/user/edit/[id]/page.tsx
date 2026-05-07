@@ -8,6 +8,14 @@ import type { UserFormData } from "@/types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
+interface FormData {
+  name: string;
+  email: string;
+  role: string;
+  isVerified: boolean;
+  password?: string;
+}
+
 const EditUserPage = () => {
   const router = useRouter();
   const { id } = useParams();
@@ -75,13 +83,17 @@ const EditUserPage = () => {
     setMessage({ type: "", text: "" });
 
     try {      
-      const body: Partial<FormData> = { ...formData };
-      if (!body.password) delete body.password;
+      const body: Partial<FormData> = { ...(formData as any) };
+      
+      if (!body.password) {
+        delete body.password;
+      }
 
       const res = await fetch(`${BASE_URL}/user/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
+        // Important for cross-origin cookies if you use them!
+        credentials: "include", 
         body: JSON.stringify(body),
       });
 

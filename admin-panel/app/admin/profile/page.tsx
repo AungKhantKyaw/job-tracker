@@ -8,7 +8,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 interface FormData {
   name: string;
   email: string;
-  password: string;
+  password?: string;
   confirm: string;
   professionalSummary: string;
   skills: string; 

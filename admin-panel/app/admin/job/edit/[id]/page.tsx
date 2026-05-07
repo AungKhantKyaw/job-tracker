@@ -297,8 +297,8 @@ const EditJobPage = ({ params: paramsPromise }: EditProps) => {
           {/* Timeline */}
           <div style={styles.sectionTitle}>Application Timeline</div>
           <div style={styles.timelineContainer}>
-            {formData.statusHistory?.length > 0 ? (
-              formData.statusHistory.map((history, index) => (
+              { (formData.statusHistory?.length ?? 0) > 0 ? (
+                formData.statusHistory?.map((history, index) => (
                 <div key={index} style={styles.timelineItem}>
                   <div style={styles.timelineDot} />
                   <div style={styles.timelineContent}>
@@ -313,7 +313,7 @@ const EditJobPage = ({ params: paramsPromise }: EditProps) => {
                       })}
                     </span>
                   </div>
-                  {index !== formData.statusHistory.length - 1 && (
+                  {index !== (formData.statusHistory?.length ?? 0) - 1 && (
                     <div style={styles.timelineLine} />
                   )}
                 </div>

@@ -306,7 +306,7 @@ export default function UserEditJobPage({ params: paramsPromise }: EditProps) {
             </div>
           </Section>
 
-          {formData.statusHistory?.length > 0 && (
+          { (formData.statusHistory?.length ?? 0) > 0  && (
             <Section label="Application Timeline">
               <div className={styles.timeline}>
                 {formData.statusHistory.map((h, i) => (

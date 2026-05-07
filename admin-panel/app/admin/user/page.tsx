@@ -135,7 +135,7 @@ const UserListPage = () => {
                       </span>
                     </td>
                     <td style={styles.td}>
-                      {new Date(user.createdAt).toLocaleDateString()}
+                      {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "N/A"}
                     </td>
                     <td style={styles.td}>
                       <div style={styles.actionGroup}>

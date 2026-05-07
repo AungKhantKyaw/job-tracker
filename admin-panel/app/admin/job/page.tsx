@@ -189,7 +189,7 @@ const JobPage = () => {
                     </span>
                   </td>
                   <td style={styles.td}>
-                    {new Date(job.appliedDate).toLocaleDateString()}
+                    {job.appliedDate ? new Date(job.appliedDate).toLocaleDateString() : "N/A"}
                   </td>
                   <td style={styles.td}>
                     <div style={styles.actionGroup}>

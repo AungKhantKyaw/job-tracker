@@ -5,6 +5,15 @@ import type { LoginFormData } from "@/types";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
+interface FormData {
+  name: string;
+  email: string;
+  password: string;
+  confirm: string;
+  professionalSummary: string;
+  skills: string; 
+}
+
 const ProfilePage = () => {
   const [formData, setFormData] = useState<LoginFormData>({
     name: "",

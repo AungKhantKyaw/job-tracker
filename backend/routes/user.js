@@ -126,7 +126,7 @@ router.post("/login", async (req, res) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: true,
-      sameSite: "none",
+      sameSite: "none", // Adjust based on your client URL and CORS settings
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -148,7 +148,12 @@ router.post("/login", async (req, res) => {
 
 // POST /user/logout
 router.post("/logout", (_req, res) => {
-  res.clearCookie("token", { httpOnly: true, sameSite: "strict" });
+  res.clearCookie("token", { 
+    httpOnly: true, 
+    secure: true, 
+    sameSite: "none",
+    path: "/" 
+  });
   return res.json({ message: "Logged out successfully." });
 });
 

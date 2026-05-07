@@ -14,6 +14,7 @@ const AddUserPage = () => {
     email: "",
     password: "",
     role: "user",
+    isVerified: false,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");

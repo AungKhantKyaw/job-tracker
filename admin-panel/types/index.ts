@@ -84,13 +84,13 @@ export interface JobFormData {
   salaryRange: string;
   status: string; 
   appliedDate: string;
-  followupDate: string;
+  followupDate?: string;
   link: string;
   description: string;
-  contactPerson: string;
-  contactEmail: string;
-  contactPhone: string;
-  notes: string;
+  contactPerson?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  notes?: string;
   statusHistory?: StatusHistory[];
 }
 

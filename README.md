@@ -2,13 +2,21 @@
 
 **OfferGrid** is a full-stack application designed to help job seekers centralize, manage, and visualize their job search journey. It transforms the chaotic process of job hunting into a structured, data-driven workflow.
 
+> **Branch information**
+> - `main` – base application (may call backend directly, suitable for same‑domain hosting).
+> - `deployment-branch` – configured for cross‑domain deployment (frontend on Vercel, backend on Render) using Next.js API routes as proxies.
+> 
+> The proxy pattern described below is **only required** when frontend and backend are on different domains (e.g., Vercel + Render). If both are on the same domain, you can call the backend directly without proxies.
+
+---
+
 ### 🔗 Live Demo
 * **Frontend:** [https://job-tracker-five-woad.vercel.app/](https://job-tracker-five-woad.vercel.app/)
 * **Backend API:** [https://job-tracker-backend-k8kj.onrender.com/](https://job-tracker-backend-k8kj.onrender.com/)
 
 ---
 
-## 🚀 Key Features
+## Key Features
 
 * **Secure Authentication:** JWT-based session management using HttpOnly, Secure
 * **Job Management (CRUD):** Full capability to add, edit, track, and delete job applications.
@@ -38,7 +46,7 @@ job-tracker/
 ```
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 
 ### Frontend
 - **Framework:** Next.js (App Router)
@@ -55,7 +63,7 @@ job-tracker/
 
 ---
 
-# 📦 Local Development Setup
+# Local Development Setup
 
 ## Prerequisites
 
@@ -125,12 +133,12 @@ http://localhost:3000
 NEXT_PUBLIC_API_URL=http://localhost:5002
 ```
 
-> No `NEXT_PUBLIC_API_URL` needed — all API calls go through `/api/*` proxies.
+> Important: In the deployment-branch, the frontend never calls the backend directly. All requests are proxied through Next.js API routes (/api/*). This ensures cookies work on Vercel and avoids CORS.
 
 ---
 
 
-#  API Proxy Pattern
+#  API Proxy Pattern (for cross‑domain deployment only)
 
 All frontend-to-backend communication goes through Next.js API routes, which forward the request and preserve the `Cookie` header.
 
@@ -148,9 +156,10 @@ All frontend-to-backend communication goes through Next.js API routes, which for
 | `GET/POST /api/admin/users` | `app/api/admin/users/route.ts` | `GET /user`, `POST /user/create` |
 | `GET/PUT/DELETE /api/admin/users/[id]` | `app/api/admin/users/[id]/route.ts` | `GET /user/:id`, `PUT /user/:id`, `DELETE /user/:id` |
 
+> If you deploy frontend and backend on the same domain (e.g., both behind a single reverse proxy), you can remove all these proxies and call the backend directly – the cookie will be sent automatically.
 ---
 
-# 🤝 Contributing
+# Contributing
 
 Pull requests are welcome.
 

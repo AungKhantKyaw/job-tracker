@@ -159,6 +159,16 @@ All frontend-to-backend communication goes through Next.js API routes, which for
 > If you deploy frontend and backend on the same domain (e.g., both behind a single reverse proxy), you can remove all these proxies and call the backend directly – the cookie will be sent automatically.
 ---
 
+## Screenshots
+
+### Dashboard
+
+![Dashboard](./screenshots/dashboard.png)
+
+### Application
+
+![Admin Panel](./screenshots/application-form.png)
+
 # Contributing
 
 Pull requests are welcome.

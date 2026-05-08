@@ -39,9 +39,7 @@ export default function UserProfilePage() {
 
     const fetchProfileData = async () => {
       try {
-        const res = await fetch(`${BASE_URL}/profile/me`, {
-          credentials: "include",
-        });
+        const res = await fetch('/api/user/profile');
         if (res.ok) {
           const profile = await res.json();
           setFormData(prev => ({
@@ -81,10 +79,9 @@ export default function UserProfilePage() {
       const userBody: any = { name: formData.name.trim(), email: formData.email };
       if (formData.password) userBody.password = formData.password;
 
-      const userRes = await fetch(`${BASE_URL}/user/profile`, {
+      const userRes = await fetch(`/api/user/profile`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify(userBody),
       });
 
@@ -95,10 +92,9 @@ export default function UserProfilePage() {
         skills: formData.skills.split(",").map(s => s.trim()).filter(s => s !== ""),
       };
 
-      const profileRes = await fetch(`${BASE_URL}/profile`, {
-        method: "POST",
+      const profileRes = await fetch(`/api/user/profile`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify(profileBody),
       });
 

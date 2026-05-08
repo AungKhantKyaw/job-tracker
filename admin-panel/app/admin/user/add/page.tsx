@@ -32,10 +32,9 @@ const AddUserPage = () => {
     setError("");
 
     try {
-      const res = await fetch(`${BASE_URL}/user/create`, {
+      const res = await fetch(`/api/admin/users`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify(formData),
       });
 

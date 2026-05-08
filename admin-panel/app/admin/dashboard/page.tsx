@@ -35,9 +35,7 @@ const AdminDashboard = () => {
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        const res = await fetch(`${BASE_URL}/job?page=1&limit=200`, {
-          credentials: "include",
-        });
+        const res = await fetch(`/api/jobs?page=1&limit=200`);
         const data = await res.json();
         setJobs(Array.isArray(data) ? data : (data.jobs ?? []));
       } catch {

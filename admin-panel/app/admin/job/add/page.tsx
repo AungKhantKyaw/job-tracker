@@ -32,9 +32,7 @@ const AddJobPage = () => {
   useEffect(() => {
     const fetchStatuses = async () => {
       try {
-        const res = await fetch(`${BASE_URL}/status`, {
-          credentials: "include",
-        });
+        const res = await fetch('/api/status');
 
 
         const data: Status[] = await res.json();
@@ -72,10 +70,9 @@ const AddJobPage = () => {
 
     setLoading(true);
     try {
-      const res = await fetch(`${BASE_URL}/job`, {
+      const res = await fetch(`/api/jobs`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify(formData),
       });
 

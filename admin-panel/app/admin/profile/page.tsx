@@ -53,10 +53,9 @@ const ProfilePage = () => {
       };
       if (formData.password) body.password = formData.password;
 
-      const res = await fetch(`${BASE_URL}/user/profile`, {
+      const res = await fetch(`/api/user/profile`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify(body),
       });
 

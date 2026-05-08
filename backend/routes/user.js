@@ -203,6 +203,17 @@ router.put("/profile", protect, async (req, res) => {
   }
 });
 
+// GET /user/profile - get current user profile
+router.get("/profile", protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+    if (!user) return res.status(404).json({ message: "User not found." });
+    res.json(user);
+  } catch (err) {
+    serverError(res, err);
+  }
+});
+
 // ─── Admin: List Users ───────────────────────────────────────────────────────
 
 // GET /user?page=1&limit=20

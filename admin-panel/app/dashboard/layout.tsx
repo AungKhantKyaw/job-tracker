@@ -60,13 +60,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const handleLogout = async () => {
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002"}/user/logout`, {
-        method: "POST",
-        credentials: "include",
+      await fetch('/api/auth/logout', {
+        method: 'POST',
       });
     } finally {
-      sessionStorage.removeItem("user");
-      router.push("/login");
+      sessionStorage.removeItem('user');
+      router.push('/login');
     }
   };
 

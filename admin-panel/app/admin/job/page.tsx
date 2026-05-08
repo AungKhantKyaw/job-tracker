@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { Status, Job } from "@/types";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
 const JobPage = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -24,10 +23,8 @@ const JobPage = () => {
     setError("");
     try {
       const [statusRes, jobRes] = await Promise.all([
-        fetch(`${BASE_URL}/status`, { credentials: "include" }),
-        fetch(`${BASE_URL}/job?page=${page}&limit=${limit}`, {
-          credentials: "include",
-        }),
+        fetch('/api/status'),
+        fetch(`/api/jobs?page=1&limit=${limit}`),
       ]);
 
       if (statusRes.status === 401 || jobRes.status === 401) {
@@ -79,9 +76,8 @@ const JobPage = () => {
     if (!confirm("Delete this application?")) return;
     setDeletingId(id);
     try {
-      const res = await fetch(`${BASE_URL}/job/${id}`, {
+      const res = await fetch(`/api/jobs/${id}`, {
         method: "DELETE",
-        credentials: "include",
       });
 
       if (!res.ok) throw new Error("Delete failed.");

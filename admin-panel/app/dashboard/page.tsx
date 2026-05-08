@@ -19,8 +19,6 @@ import styles from "./dashboard.module.css";
 interface Status { _id: string; label: string; color: string; }
 interface Job { _id: string; role: string; company: string; location?: string; appliedDate?: string; createdAt?: string; status?: Status | string; }
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
-
 const getStatusLabel = (status: Job["status"]) => {
   if (!status) return "No Status";
   if (typeof status === "object") return status.label;
@@ -46,7 +44,7 @@ export default function UserDashboard() {
 
     const fetchJobs = async () => {
       try {
-        const res = await fetch(`${BASE_URL}/job?page=1&limit=200`, { credentials: "include" });
+        const res = await fetch('/api/jobs?page=1&limit=10');
         if (!res.ok) return;
         const data = await res.json();
         setJobs(Array.isArray(data) ? data : (data.jobs ?? []));

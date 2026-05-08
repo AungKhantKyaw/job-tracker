@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
 const AdminHeader = () => {
   const [userName, setUserName] = useState("");

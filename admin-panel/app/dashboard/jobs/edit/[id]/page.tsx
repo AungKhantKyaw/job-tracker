@@ -38,8 +38,6 @@ interface FormData {
   statusHistory: StatusHistory[];
 }
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
-
 const formatDate = (d: string | null) =>
   d ? new Date(d).toISOString().split("T")[0] : "";
 
@@ -81,8 +79,8 @@ export default function UserEditJobPage({ params: paramsPromise }: EditProps) {
     const fetchData = async () => {
       try {
         const [jobRes, statusRes] = await Promise.all([
-          fetch(`${BASE_URL}/job/${id}`, { credentials: "include" }),
-          fetch(`${BASE_URL}/status`, { credentials: "include" }),
+          fetch('/api/jobs?page=1&limit=10'),
+          fetch('/api/status'),
         ]);
         if (!jobRes.ok) throw new Error("Failed to load job.");
         const [job, statusData] = await Promise.all([
@@ -119,10 +117,9 @@ export default function UserEditJobPage({ params: paramsPromise }: EditProps) {
     setSaving(true);
     setError("");
     try {
-      const res = await fetch(`${BASE_URL}/job/${id}`, {
+      const res = await fetch(`/api/jobs/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           ...formData,
           appliedDate: formData.appliedDate || null,

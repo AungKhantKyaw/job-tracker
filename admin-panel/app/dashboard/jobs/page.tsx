@@ -20,7 +20,6 @@ interface Job {
   status?: Status | string;
 }
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
 const getStatusLabel = (status: Job["status"]) => {
   if (!status) return "No Status";
@@ -52,10 +51,8 @@ export default function UserJobsPage() {
     setError("");
     try {
       const [statusRes, jobRes] = await Promise.all([
-        fetch(`${BASE_URL}/status`, { credentials: "include" }),
-        fetch(`${BASE_URL}/job?page=${page}&limit=${limit}`, {
-          credentials: "include",
-        }),
+        fetch('/api/status'),
+        fetch('/api/jobs?page=1&limit=10'),
       ]);
 
       const statusData = await statusRes.json();
@@ -95,9 +92,8 @@ export default function UserJobsPage() {
     if (!confirm("Delete this application?")) return;
     setDeletingId(id);
     try {
-      const res = await fetch(`${BASE_URL}/job/${id}`, {
+      const res = await fetch(`/api/jobs/${id}`, {
         method: "DELETE",
-        credentials: "include",
       });
       if (!res.ok) throw new Error("Delete failed.");
       setJobs((prev) => prev.filter((j) => j._id !== id));

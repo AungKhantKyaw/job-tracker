@@ -9,7 +9,6 @@ interface EditProps {
   params: Promise<{ id: string }>;
 }
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
 const formatDate = (dateStr: string | null) => {
   if (!dateStr) return "";
@@ -47,8 +46,8 @@ const EditJobPage = ({ params: paramsPromise }: EditProps) => {
     const fetchData = async () => {
       try {
         const [jobRes, statusRes] = await Promise.all([
-          fetch(`${BASE_URL}/job/${id}`, { credentials: "include" }),
-          fetch(`${BASE_URL}/status`, { credentials: "include" }),
+          fetch(`/api/jobs/${id}`),
+          fetch('/api/status'),
         ]);
 
         if (jobRes.status === 401 || statusRes.status === 401) {
@@ -96,10 +95,9 @@ const EditJobPage = ({ params: paramsPromise }: EditProps) => {
     setError("");
 
     try {
-      const res = await fetch(`${BASE_URL}/job/${id}`, {
+      const res = await fetch(`/api/jobs/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           ...formData,
           followupDate: formData.followupDate || null,

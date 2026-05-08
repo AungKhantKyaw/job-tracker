@@ -37,7 +37,6 @@ app.get("/", (req, res) => {
   res.send("Server is up and running!");
 });
 
-app.set("trust proxy", 1);
 
 // Routes
 const jobRoutes = require("./routes/job");

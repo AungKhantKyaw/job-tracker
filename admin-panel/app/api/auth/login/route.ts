@@ -1,3 +1,4 @@
+import { apiFetch } from '@/lib/api';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
@@ -5,7 +6,7 @@ export async function POST(request: NextRequest) {
     const { email, password } = await request.json();
 
     const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002';
-    const backendRes = await fetch(`${backendUrl}/user/login`, {
+    const backendRes = await apiFetch(`${backendUrl}/user/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),

@@ -1,3 +1,4 @@
+import { apiFetch } from '@/lib/api';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
@@ -7,7 +8,7 @@ export async function GET(
   const { id } = await params;
   const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002';
 
-  const response = await fetch(`${backendUrl}/user/${id}`, {
+  const response = await apiFetch(`${backendUrl}/user/${id}`, {
     headers: {
       Cookie: request.headers.get('cookie') || '',
     },
@@ -23,7 +24,7 @@ export async function DELETE(
   const { id } = await params;
   const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002';
 
-  const response = await fetch(`${backendUrl}/user/${id}`, {
+  const response = await apiFetch(`${backendUrl}/user/${id}`, {
     method: 'DELETE',
     headers: {
       Cookie: request.headers.get('cookie') || '',
@@ -41,7 +42,7 @@ export async function PUT(
   const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002';
   const body = await request.json();
 
-  const response = await fetch(`${backendUrl}/user/${id}`, {
+  const response = await apiFetch(`${backendUrl}/user/${id}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',

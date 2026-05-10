@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { UserFormData } from "@/types";
+import { apiFetch } from "@/lib/api";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
@@ -32,7 +33,7 @@ const AddUserPage = () => {
     setError("");
 
     try {
-      const res = await fetch(`/api/admin/users`, {
+      const res = await apiFetch(`/api/admin/users`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),

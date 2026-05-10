@@ -5,6 +5,7 @@ import Link from "next/link";
 import styles from "./forgot.module.css";
 import Image from "next/image";
 import { useToast } from "@/components/ToastProvider";
+import { apiFetch } from "@/lib/api";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -29,7 +30,7 @@ export default function ForgotPasswordPage() {
     setLoading(true);
 
     try {
-      const res = await fetch(`/api/auth/forgot-password`, {
+      const res = await apiFetch(`/api/auth/forgot-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),

@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import styles from "./register.module.css";
 import { useToast } from "@/components/ToastProvider";
+import { apiFetch } from "@/lib/api";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
@@ -45,7 +46,7 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
-      const res = await fetch(`/api/user/register`, {
+      const res = await apiFetch(`/api/user/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useToast } from "@/components/ToastProvider";
 import styles from "./addJob.module.css";
+import { apiFetch } from "@/lib/api";
 
 interface Status {
   _id: string;
@@ -51,7 +52,7 @@ export default function UserAddJobPage() {
   useEffect(() => {
     const fetchStatuses = async () => {
       try {
-        const res = await fetch('/api/status');
+        const res = await apiFetch('/api/status');
         const data: Status[] = await res.json();
         setStatuses(data);
         if (data.length > 0)
@@ -81,7 +82,7 @@ export default function UserAddJobPage() {
 
     setLoading(true);
     try {
-      const res = await fetch(`/api/jobs`, {
+      const res = await apiFetch(`/api/jobs`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),

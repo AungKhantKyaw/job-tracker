@@ -1,3 +1,4 @@
+import { apiFetch } from '@/lib/api';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
@@ -6,7 +7,7 @@ export async function GET(request: NextRequest) {
   const page = searchParams.get('page') || '1';
   const limit = searchParams.get('limit') || '10';
 
-  const response = await fetch(`${backendUrl}/job?page=${page}&limit=${limit}`, {
+  const response = await apiFetch(`${backendUrl}/job?page=${page}&limit=${limit}`, {
     headers: {
       Cookie: request.headers.get('cookie') || '',
     },
@@ -20,7 +21,7 @@ export async function POST(request: NextRequest) {
   const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002';
   const body = await request.json();
 
-  const response = await fetch(`${backendUrl}/job`, {
+  const response = await apiFetch(`${backendUrl}/job`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

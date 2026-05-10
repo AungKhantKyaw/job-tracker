@@ -1,3 +1,4 @@
+import { apiFetch } from '@/lib/api';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
@@ -5,7 +6,7 @@ export async function POST(request: NextRequest) {
     const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002';
 
     // Forward the request to backend logout endpoint
-    const backendRes = await fetch(`${backendUrl}/user/logout`, {
+    const backendRes = await apiFetch(`${backendUrl}/user/logout`, {
       method: 'POST',
       headers: {        
         Cookie: request.headers.get('cookie') || '',

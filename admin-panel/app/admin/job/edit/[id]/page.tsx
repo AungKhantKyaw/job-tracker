@@ -4,6 +4,7 @@ import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 
 import type { Status, JobFormData, StatusHistory } from "@/types";
+import { apiFetch } from "@/lib/api";
 
 interface EditProps {
   params: Promise<{ id: string }>;
@@ -46,8 +47,8 @@ const EditJobPage = ({ params: paramsPromise }: EditProps) => {
     const fetchData = async () => {
       try {
         const [jobRes, statusRes] = await Promise.all([
-          fetch(`/api/jobs/${id}`),
-          fetch('/api/status'),
+          apiFetch(`/api/jobs/${id}`),
+          apiFetch('/api/status'),
         ]);
 
         if (jobRes.status === 401 || statusRes.status === 401) {
@@ -95,7 +96,7 @@ const EditJobPage = ({ params: paramsPromise }: EditProps) => {
     setError("");
 
     try {
-      const res = await fetch(`/api/jobs/${id}`, {
+      const res = await apiFetch(`/api/jobs/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

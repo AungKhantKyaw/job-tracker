@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import type { Status, Job } from "@/types";
+import { apiFetch } from "@/lib/api";
 
 
 const JobPage = () => {
@@ -76,7 +77,7 @@ const JobPage = () => {
     if (!confirm("Delete this application?")) return;
     setDeletingId(id);
     try {
-      const res = await fetch(`/api/jobs/${id}`, {
+      const res = await apiFetch(`/api/jobs/${id}`, {
         method: "DELETE",
       });
 

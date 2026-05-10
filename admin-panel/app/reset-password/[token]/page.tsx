@@ -4,6 +4,7 @@ import { useState, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useToast } from "@/components/ToastProvider";
+import { apiFetch } from "@/lib/api";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
@@ -38,7 +39,7 @@ export default function ResetPasswordPage({ params: paramsPromise }: Props) {
 
     setLoading(true);
     try {
-      const res = await fetch(`/api/auth/reset-password/${token}`, {
+      const res = await apiFetch(`/api/auth/reset-password/${token}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password }),

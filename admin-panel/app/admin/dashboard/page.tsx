@@ -14,8 +14,7 @@ import {
 } from "recharts";
 import type { Job } from "@/types";
 import styles from "./dashboard.module.css";
-
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
+import { apiFetch } from "@/lib/api";
 
 const getStatusLabel = (status: Job["status"]) => {
   if (!status) return "No Status";
@@ -35,7 +34,7 @@ const AdminDashboard = () => {
   useEffect(() => {
     const fetchJobs = async () => {
       try {
-        const res = await fetch(`/api/jobs?page=1&limit=200`);
+        const res = await apiFetch(`/api/jobs?page=1&limit=200`);
         const data = await res.json();
         setJobs(Array.isArray(data) ? data : (data.jobs ?? []));
       } catch {

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useToast } from "@/components/ToastProvider";
 import styles from "./jobs.module.css";
+import { apiFetch } from "@/lib/api";
 
 interface Status {
   _id: string;
@@ -92,7 +93,7 @@ export default function UserJobsPage() {
     if (!confirm("Delete this application?")) return;
     setDeletingId(id);
     try {
-      const res = await fetch(`/api/jobs/${id}`, {
+      const res = await apiFetch(`/api/jobs/${id}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Delete failed.");

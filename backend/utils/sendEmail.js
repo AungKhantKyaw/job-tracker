@@ -1,7 +1,15 @@
 require("dotenv").config(); 
-const { Resend } = require('resend');
+const nodemailer = require("nodemailer");
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const transporter = nodemailer.createTransport({
+  host: process.env.EMAIL_HOST,
+  port: parseInt(process.env.EMAIL_PORT || "587"),
+  secure: process.env.EMAIL_PORT === "465",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
 
 /**
  * @param {Object} options
@@ -10,24 +18,14 @@ const resend = new Resend(process.env.RESEND_API_KEY);
  * @param {string} options.html
  */
 const sendEmail = async ({ to, subject, html }) => {
-  try {
-    const { data, error } = await resend.emails.send({
-      from: 'OfferGrid <onboarding@resend.dev>', 
-      to: [to],
-      subject: subject,
-      html: html,
-    });
+  const mailOptions = {
+    from: `"${process.env.EMAIL_FROM_NAME || "OfferGrid"}" <${process.env.EMAIL_USER}>`,
+    to,
+    subject,
+    html,
+  };
 
-    if (error) {
-      console.error("Resend API Error:", error);
-      throw new Error(error.message);
-    }
-
-    return data;
-  } catch (err) {
-    console.error("Email Helper Error:", err);
-    throw err;
-  }
+  await transporter.sendMail(mailOptions);
 };
 
 // ── Email templates ───────────────────────────────────────────────────────────

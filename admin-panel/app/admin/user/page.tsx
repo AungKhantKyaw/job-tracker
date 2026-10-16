@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 
 import type { User, Pagination } from "@/types";
+import { apiFetch } from "@/lib/api";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
@@ -19,9 +20,7 @@ const UserListPage = () => {
     setLoading(true);
     setError("");
     try {
-      const response = await fetch(`${BASE_URL}/user?page=${pageNum}&limit=20`, {
-        credentials: "include", 
-      });
+      const response = await apiFetch(`/api/admin/users?page=${pageNum}&limit=20`);
 
       if (response.status === 401) {       
         window.location.href = "/login";
@@ -53,9 +52,8 @@ const UserListPage = () => {
 
     setDeletingId(id);
     try {
-      const response = await fetch(`${BASE_URL}/user/${id}`, {
+      const response = await apiFetch(`/api/admin/users/${id}`, {
         method: "DELETE",
-        credentials: "include",
       });
 
       const data = await response.json();

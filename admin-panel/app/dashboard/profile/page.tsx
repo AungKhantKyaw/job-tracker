@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useToast } from "@/components/ToastProvider";
 import styles from "./profile.module.css";
+import { apiFetch } from "@/lib/api";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
@@ -39,9 +40,7 @@ export default function UserProfilePage() {
 
     const fetchProfileData = async () => {
       try {
-        const res = await fetch(`${BASE_URL}/profile/me`, {
-          credentials: "include",
-        });
+        const res = await apiFetch('/api/user/profile');
         if (res.ok) {
           const profile = await res.json();
           setFormData(prev => ({
@@ -81,10 +80,9 @@ export default function UserProfilePage() {
       const userBody: any = { name: formData.name.trim(), email: formData.email };
       if (formData.password) userBody.password = formData.password;
 
-      const userRes = await fetch(`${BASE_URL}/user/profile`, {
+      const userRes = await apiFetch(`/api/user/profile`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify(userBody),
       });
 
@@ -95,10 +93,9 @@ export default function UserProfilePage() {
         skills: formData.skills.split(",").map(s => s.trim()).filter(s => s !== ""),
       };
 
-      const profileRes = await fetch(`${BASE_URL}/profile`, {
-        method: "POST",
+      const profileRes = await apiFetch(`/api/user/profile`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify(profileBody),
       });
 

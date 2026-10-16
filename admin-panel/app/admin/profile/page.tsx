@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { LoginFormData } from "@/types";
+import { apiFetch } from "@/lib/api";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
@@ -53,10 +54,9 @@ const ProfilePage = () => {
       };
       if (formData.password) body.password = formData.password;
 
-      const res = await fetch(`${BASE_URL}/user/profile`, {
+      const res = await apiFetch(`/api/user/profile`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify(body),
       });
 

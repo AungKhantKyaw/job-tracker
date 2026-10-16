@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import styles from "./login.module.css";
 import { useToast } from "@/components/ToastProvider";
+import { apiFetch } from "@/lib/api";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
@@ -25,17 +26,19 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const res = await fetch(`${BASE_URL}/user/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
+      const res = await apiFetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
+      if (!res.ok) throw new Error(data.error || "Login failed");
 
-      sessionStorage.setItem("user", JSON.stringify(data.user));
+      if (data.user) {
+        sessionStorage.setItem("user", JSON.stringify(data.user));
+      }
+
       router.push("/dashboard");
     } catch (err: any) {
       toast.error(err.message || "Login failed");

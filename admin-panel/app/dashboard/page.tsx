@@ -15,11 +15,10 @@ import {
 
 import { useToast } from "@/components/ToastProvider";
 import styles from "./dashboard.module.css";
+import { apiFetch } from "@/lib/api";
 
 interface Status { _id: string; label: string; color: string; }
 interface Job { _id: string; role: string; company: string; location?: string; appliedDate?: string; createdAt?: string; status?: Status | string; }
-
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
 const getStatusLabel = (status: Job["status"]) => {
   if (!status) return "No Status";
@@ -31,7 +30,7 @@ const getStatusColor = (status: Job["status"]) => {
   if (status && typeof status === "object" && status.color) return status.color;
   return "#94a3b8";
 };
-
+      
 export default function UserDashboard() {
   const toast = useToast();
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -46,10 +45,15 @@ export default function UserDashboard() {
 
     const fetchJobs = async () => {
       try {
-        const res = await fetch(`${BASE_URL}/job?page=1&limit=200`, { credentials: "include" });
+        const res = await apiFetch('/api/jobs?page=1&limit=10');
         if (!res.ok) return;
         const data = await res.json();
         setJobs(Array.isArray(data) ? data : (data.jobs ?? []));
+
+      const profileRes = await apiFetch('/api/user/profile');
+      const profile = await profileRes.json();
+      console.log('User role:', profile.role);
+
       } catch(err: any) {
         toast.error(err.message || "Failed to load job details.");
       } finally {

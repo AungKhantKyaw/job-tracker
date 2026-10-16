@@ -1,0 +1,48 @@
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      PORT: 5002
+      MONGO_URI: mongodb://mongo:27017/jobtracker
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      CLIENT_URL: ${CLIENT_URL:-http://localhost:3000}
+      # Auth cookies are marked Secure when NODE_ENV=production, which only
+      # works over HTTPS. Keep "development" for plain-http local use and
+      # set "production" when serving behind HTTPS.
+      NODE_ENV: ${BACKEND_NODE_ENV:-development}
+      EMAIL_HOST: ${EMAIL_HOST:-}
+      EMAIL_PORT: ${EMAIL_PORT:-587}
+      EMAIL_USER: ${EMAIL_USER:-}
+      EMAIL_PASS: ${EMAIL_PASS:-}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME:-OfferGrid}
+    ports:
+      - "5006:5002"
+
+  frontend:
+    build:
+      context: ./admin-panel
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:5002}
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+
+volumes:
+  mongo_data:

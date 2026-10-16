@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useToast } from "@/components/ToastProvider";
 import styles from "./addJob.module.css";
+import { apiFetch } from "@/lib/api";
 
 interface Status {
   _id: string;
@@ -26,7 +27,6 @@ interface FormData {
   notes: string;
 }
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
 export default function UserAddJobPage() {
   const toast = useToast();
@@ -52,9 +52,7 @@ export default function UserAddJobPage() {
   useEffect(() => {
     const fetchStatuses = async () => {
       try {
-        const res = await fetch(`${BASE_URL}/status`, {
-          credentials: "include",
-        });
+        const res = await apiFetch('/api/status');
         const data: Status[] = await res.json();
         setStatuses(data);
         if (data.length > 0)
@@ -84,10 +82,9 @@ export default function UserAddJobPage() {
 
     setLoading(true);
     try {
-      const res = await fetch(`${BASE_URL}/job`, {
+      const res = await apiFetch(`/api/jobs`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify(formData),
       });
       const data = await res.json();

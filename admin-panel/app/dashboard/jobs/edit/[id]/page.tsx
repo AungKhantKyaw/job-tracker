@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useToast } from "@/components/ToastProvider";
 import styles from "./editJob.module.css";
+import { apiFetch } from "@/lib/api";
 
 interface EditProps {
   params: Promise<{ id: string }>;
@@ -37,8 +38,6 @@ interface FormData {
   notes: string;
   statusHistory: StatusHistory[];
 }
-
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
 const formatDate = (d: string | null) =>
   d ? new Date(d).toISOString().split("T")[0] : "";
@@ -77,18 +76,28 @@ export default function UserEditJobPage({ params: paramsPromise }: EditProps) {
     statusHistory: [],
   });
 
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [jobRes, statusRes] = await Promise.all([
-          fetch(`${BASE_URL}/job/${id}`, { credentials: "include" }),
-          fetch(`${BASE_URL}/status`, { credentials: "include" }),
+          apiFetch(`/api/jobs/${id}`),
+          apiFetch('/api/status'),
         ]);
-        if (!jobRes.ok) throw new Error("Failed to load job.");
-        const [job, statusData] = await Promise.all([
-          jobRes.json(),
-          statusRes.json(),
-        ]);
+
+        if (!jobRes.ok) {
+          const errorData = await jobRes.json();
+          throw new Error(errorData.message || 'Failed to load job.');
+        }
+        if (!statusRes.ok) {
+          const errorData = await statusRes.json();
+          throw new Error(errorData.message || 'Failed to load statuses.');
+        }
+
+        // Parse JSON only once per response
+        const job = await jobRes.json();
+        const statusData = await statusRes.json();
+
         setStatuses(statusData);
         setFormData({
           ...job,
@@ -119,10 +128,9 @@ export default function UserEditJobPage({ params: paramsPromise }: EditProps) {
     setSaving(true);
     setError("");
     try {
-      const res = await fetch(`${BASE_URL}/job/${id}`, {
+      const res = await apiFetch(`/api/jobs/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           ...formData,
           appliedDate: formData.appliedDate || null,

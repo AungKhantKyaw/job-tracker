@@ -5,8 +5,8 @@ import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 
 import type { UserFormData } from "@/types";
+import { apiFetch } from "@/lib/api";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
 interface FormData {
   name: string;
@@ -35,9 +35,7 @@ const EditUserPage = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {        
-        const res = await fetch(`${BASE_URL}/user/${id}`, {
-          credentials: "include",
-        });
+        const res = await apiFetch(`/api/admin/users/${id}`);
 
         if (res.status === 403) {
           setMessage({ type: "error", text: "You don't have permission to edit users." });
@@ -89,11 +87,9 @@ const EditUserPage = () => {
         delete body.password;
       }
 
-      const res = await fetch(`${BASE_URL}/user/${id}`, {
+      const res = await apiFetch(`/api/admin/users/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        // Important for cross-origin cookies if you use them!
-        credentials: "include", 
         body: JSON.stringify(body),
       });
 

@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import styles from "./layout.module.css";
+import { apiFetch } from "@/lib/api";
 
 interface SessionUser {
   name: string;
@@ -60,13 +61,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const handleLogout = async () => {
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002"}/user/logout`, {
-        method: "POST",
-        credentials: "include",
+      await apiFetch('/api/auth/logout', {
+        method: 'POST',
       });
     } finally {
-      sessionStorage.removeItem("user");
-      router.push("/login");
+      sessionStorage.removeItem('user');
+      router.push('/login');
     }
   };
 

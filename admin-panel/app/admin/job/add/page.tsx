@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import type { Status, JobFormData } from "@/types";
+import { apiFetch } from "@/lib/api";
 
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
@@ -32,9 +33,7 @@ const AddJobPage = () => {
   useEffect(() => {
     const fetchStatuses = async () => {
       try {
-        const res = await fetch(`${BASE_URL}/status`, {
-          credentials: "include",
-        });
+        const res = await apiFetch('/api/status');
 
 
         const data: Status[] = await res.json();
@@ -72,10 +71,9 @@ const AddJobPage = () => {
 
     setLoading(true);
     try {
-      const res = await fetch(`${BASE_URL}/job`, {
+      const res = await apiFetch(`/api/jobs`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify(formData),
       });
 

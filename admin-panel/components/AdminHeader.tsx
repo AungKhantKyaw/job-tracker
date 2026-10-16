@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { apiFetch } from "@/lib/api";
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
 const AdminHeader = () => {
   const [userName, setUserName] = useState("");
@@ -27,16 +27,13 @@ const AdminHeader = () => {
   }, [router]);
 
   const handleLogout = async () => {
-    try {     
-      await fetch(`${BASE_URL}/user/logout`, {
-        method: "POST",
-        credentials: "include",
+    try {
+      await apiFetch('/api/auth/logout', {
+        method: 'POST',
       });
-    } catch {
-      // Even if logout API call fails, we still want to clear session and redirect to login
     } finally {
-      sessionStorage.removeItem("user");
-      router.push("/login");
+      sessionStorage.removeItem('user');
+      router.push('/login');
     }
   };
 

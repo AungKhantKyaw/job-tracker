@@ -4,6 +4,11 @@ import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import AdminHeader from "@/components/AdminHeader";
 
+// Paths under /admin that require the "admin" role.
+// "/admin" = the whole admin area. To restrict only some pages (the old
+// behaviour), use: ["/admin/user", "/admin/status"]
+const ADMIN_ONLY_PATHS = ["/admin"];
+
 export default function AdminLayout({
   children,
 }: {
@@ -13,49 +18,35 @@ export default function AdminLayout({
   const router = useRouter();
   const pathname = usePathname();
 
-  const isLoginPage = pathname === "/login";
-
   useEffect(() => {
-    if (isLoginPage) {
-      setIsAuthorized(false);
+    let role = "";
+    try {
+      const user = JSON.parse(sessionStorage.getItem("user") || "null");
+      role = user?.role || "";
+    } catch {
+      role = "";
+    }
+
+    // Not logged in (the session user is saved by the login page)
+    if (!role) {
+      router.replace("/login");
       return;
     }
 
-    const token = localStorage.getItem("token");
-    const userJson = localStorage.getItem("user");
-    const user = userJson ? JSON.parse(userJson) : null;
-    const role = user?.role || localStorage.getItem("role");
-
-    if (!token) {
-      localStorage.clear();
-      router.push("/login");
+    const needsAdmin = ADMIN_ONLY_PATHS.some((p) => pathname.startsWith(p));
+    if (needsAdmin && role !== "admin") {
+      router.replace("/dashboard");
       return;
     }
 
-    // Define paths that ONLY an Admin can access
-    const adminOnlyPaths = ["/admin/user", "/admin/status"];
-    const isTryingAdminPath = adminOnlyPaths.some((path) =>
-      pathname.startsWith(path),
-    );
-
-    if (isTryingAdminPath && role !== "admin") {
-      router.push("/admin/dashboard");
-      return;
-    }
-
-    // If all checks pass
     setIsAuthorized(true);
-  }, [router, isLoginPage, pathname]);
+  }, [router, pathname]);
 
-  // Handle Login Page view
-  if (isLoginPage) {
-    return <>{children}</>;
-  }
-
-  // Loading state to prevent "flashing" of private content
+  // Don't flash private content before the check finishes
   if (!isAuthorized) {
     return (
       <div style={styles.loadingWrapper}>
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         <div style={styles.spinner}></div>
         <p style={styles.loadingText}>Verifying permissions...</p>
       </div>
@@ -100,12 +91,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     marginTop: "16px",
     color: "#6b7280",
     fontSize: "14px",
-    fontWeight: "500",
+    fontWeight: 500,
   },
 };
-
-if (typeof document !== "undefined") {
-  const styleSheet = document.styleSheets[0];
-  const keyframes = `@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`;
-  styleSheet.insertRule(keyframes, styleSheet.cssRules.length);
-}

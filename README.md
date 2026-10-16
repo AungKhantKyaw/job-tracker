@@ -2,12 +2,6 @@
 
 **OfferGrid** is a full-stack application designed to help job seekers centralize, manage, and visualize their job search journey. It transforms the chaotic process of job hunting into a structured, data-driven workflow.
 
-> **Branch information**
-> - `main` – base application (may call backend directly, suitable for same‑domain hosting).
-> - `deployment-branch` – configured for cross‑domain deployment (frontend on Vercel, backend on Render) using Next.js API routes as proxies.
-> 
-> The proxy pattern described below is **only required** when frontend and backend are on different domains (e.g., Vercel + Render). If both are on the same domain, you can call the backend directly without proxies.
-
 ---
 
 ### 🔗 Live Demo

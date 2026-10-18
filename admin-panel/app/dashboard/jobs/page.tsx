@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useToast } from "@/components/ToastProvider";
 import styles from "./jobs.module.css";
@@ -36,7 +36,6 @@ const getStatusColor = (status: Job["status"]) => {
 export default function UserJobsPage() {
   const toast = useToast();
   const [jobs, setJobs] = useState<Job[]>([]);
-  const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
   const [statuses, setStatuses] = useState<Status[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -45,49 +44,67 @@ export default function UserJobsPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const requestId = useRef(0);
   const limit = 20;
 
+  const hasFilters = debouncedSearch !== "" || statusFilter !== "All";
+
   const fetchData = async () => {
+    const myRequest = ++requestId.current;
     setLoading(true);
     setError("");
     try {
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: String(limit),
+      });
+      if (debouncedSearch) params.set("search", debouncedSearch);
+      if (statusFilter !== "All") params.set("status", statusFilter);
+
       const [statusRes, jobRes] = await Promise.all([
-        fetch('/api/status'),
-        fetch(`/api/jobs?page=${page}&limit=${limit}`),
+        fetch("/api/status"),
+        fetch(`/api/jobs?${params.toString()}`),
       ]);
 
       const statusData = await statusRes.json();
       const jobData = await jobRes.json();
 
+      // Ignore stale responses (e.g. the user kept typing)
+      if (myRequest !== requestId.current) return;
+
       setStatuses(statusData);
       setJobs(jobData.jobs ?? []);
-      setTotalPages(jobData.totalPages ?? 1);
+      setTotalPages(Math.max(1, jobData.totalPages ?? 1));
     } catch (err: any) {
-      toast.error(err.message || "Failed to fetch jobs.");
+      if (myRequest === requestId.current) {
+        toast.error(err.message || "Failed to fetch jobs.");
+      }
     } finally {
-      setLoading(false);
+      if (myRequest === requestId.current) setLoading(false);
     }
   };
 
+  // Wait until the user pauses typing before searching
   useEffect(() => {
-    fetchData();
-  }, [page]);
+    const t = setTimeout(() => setDebouncedSearch(searchTerm.trim()), 400);
+    return () => clearTimeout(t);
+  }, [searchTerm]);
+
+  // A new search or status filter always starts from page 1
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, statusFilter]);
 
   useEffect(() => {
-    let result = jobs;
-    if (statusFilter !== "All") {
-      result = result.filter((j) => getStatusLabel(j.status) === statusFilter);
-    }
-    if (searchTerm) {
-      const t = searchTerm.toLowerCase();
-      result = result.filter(
-        (j) =>
-          j.company.toLowerCase().includes(t) ||
-          j.role.toLowerCase().includes(t),
-      );
-    }
-    setFilteredJobs(result);
-  }, [jobs, statusFilter, searchTerm]);
+    fetchData();
+  }, [page, debouncedSearch, statusFilter]);
+
+  const clearFilters = () => {
+    setSearchTerm("");
+    setDebouncedSearch("");
+    setStatusFilter("All");
+  };
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this application?")) return;
@@ -139,7 +156,7 @@ export default function UserJobsPage() {
         >
           <option value="All">All Statuses</option>
           {statuses.map((s) => (
-            <option key={s._id} value={s.label}>
+            <option key={s._id} value={s._id}>
               {s.label}
             </option>
           ))}
@@ -152,15 +169,23 @@ export default function UserJobsPage() {
       <div className={styles.tableCard}>
         {loading ? (
           <div className={styles.centerMsg}>Loading applications…</div>
-        ) : filteredJobs.length === 0 ? (
+        ) : jobs.length === 0 ? (
           <div className={styles.emptyState}>
             <span style={{ fontSize: 36 }}>📋</span>
             <p style={{ color: "#64748b", margin: "8px 0 4px", fontWeight: 500 }}>
-              No applications found
+              {hasFilters
+                ? "No applications match your search"
+                : "No applications found"}
             </p>
-            <Link href="/dashboard/jobs/add" className={styles.emptyLink}>
-              Add your first one →
-            </Link>
+            {hasFilters ? (
+              <button onClick={clearFilters} className={styles.emptyLink}>
+                Clear filters
+              </button>
+            ) : (
+              <Link href="/dashboard/jobs/add" className={styles.emptyLink}>
+                Add your first one →
+              </Link>
+            )}
           </div>
         ) : (
           <>
@@ -175,7 +200,7 @@ export default function UserJobsPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredJobs.map((job) => (
+                {jobs.map((job) => (
                   <tr key={job._id} className={styles.tr}>
                     <td className={styles.td}>
                       <p className={styles.company}>{job.company}</p>

@@ -6,7 +6,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002';
+  const backendUrl = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002';
   const response = await apiFetch(`${backendUrl}/job/${id}`, {
     headers: {
       Cookie: request.headers.get('cookie') || '',
@@ -21,7 +21,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002';
+  const backendUrl = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002';
   const body = await request.json();
   const response = await apiFetch(`${backendUrl}/job/${id}`, {
     method: 'PUT',
@@ -40,7 +40,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002';
+  const backendUrl = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002';
   const body = await request.json();
   const response = await apiFetch(`${backendUrl}/job/${id}`, {
     method: 'PATCH',
@@ -59,7 +59,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002';
+  const backendUrl = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002';
   const response = await apiFetch(`${backendUrl}/job/${id}`, {
     method: 'DELETE',
     headers: {

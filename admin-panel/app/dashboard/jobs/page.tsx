@@ -53,7 +53,7 @@ export default function UserJobsPage() {
     try {
       const [statusRes, jobRes] = await Promise.all([
         fetch('/api/status'),
-        fetch('/api/jobs?page=1&limit=10'),
+        fetch(`/api/jobs?page=${page}&limit=${limit}`),
       ]);
 
       const statusData = await statusRes.json();

@@ -45,7 +45,7 @@ export default function UserDashboard() {
 
     const fetchJobs = async () => {
       try {
-        const res = await apiFetch('/api/jobs?page=1&limit=10');
+        const res = await apiFetch('/api/jobs?page=1&limit=1000');
         if (!res.ok) return;
         const data = await res.json();
         setJobs(Array.isArray(data) ? data : (data.jobs ?? []));

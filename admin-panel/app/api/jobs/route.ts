@@ -2,7 +2,7 @@ import { apiFetch } from '@/lib/api';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
-  const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002';
+  const backendUrl = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002';
   const searchParams = request.nextUrl.searchParams;
   const page = searchParams.get('page') || '1';
   const limit = searchParams.get('limit') || '10';
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002';
+  const backendUrl = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002';
   const body = await request.json();
 
   const response = await apiFetch(`${backendUrl}/job`, {

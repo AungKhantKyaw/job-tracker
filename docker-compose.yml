@@ -37,7 +37,13 @@ services:
     build:
       context: ./admin-panel
       args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:5002}
+        # Backend URL used by the BROWSER (baked in at build time).
+        # Must match the published backend port below: 5006 -> 5002.
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:5006/api}
+    environment:
+      # Backend URL used by the Next.js API routes (server side, inside
+      # Docker). Read at runtime, so no rebuild is needed to change it.
+      BACKEND_URL: ${BACKEND_URL:-http://backend:5002/api}
     restart: unless-stopped
     depends_on:
       - backend

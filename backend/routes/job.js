@@ -1,5 +1,9 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const router = express.Router();
+
+// Escape user input so it is matched literally inside a RegExp
+const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const Job = require("../models/Job");
 const { protect } = require("../middleware/auth");
 
@@ -13,6 +17,17 @@ router.get("/", protect, async (req, res) => {
     const skip = (page - 1) * limit;
 
     const query = { user: req.user.id };
+
+    // Optional filters: ?search=<company or role>&status=<status _id>
+    const search = (req.query.search || "").toString().trim();
+    if (search) {
+      const rx = new RegExp(escapeRegex(search), "i");
+      query.$or = [{ company: rx }, { role: rx }];
+    }
+    const status = (req.query.status || "").toString();
+    if (status && mongoose.isValidObjectId(status)) {
+      query.status = status;
+    }
 
     const [jobs, total] = await Promise.all([
       Job.find(query)

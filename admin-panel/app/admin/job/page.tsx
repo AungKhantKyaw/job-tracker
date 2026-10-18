@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { Status, Job } from "@/types";
 import { apiFetch } from "@/lib/api";
@@ -8,7 +8,6 @@ import { apiFetch } from "@/lib/api";
 
 const JobPage = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
-  const [filteredJobs, setFilteredJobs] = useState<Job[]>([]);
   const [statuses, setStatuses] = useState<Status[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -17,15 +16,26 @@ const JobPage = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [totalJobs, setTotalJobs] = useState(0);
+  const requestId = useRef(0);
   const limit = 30;
 
   const fetchData = async () => {
+    const myRequest = ++requestId.current;
     setLoading(true);
     setError("");
     try {
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: String(limit),
+      });
+      if (debouncedSearch) params.set("search", debouncedSearch);
+      if (statusFilter !== "All") params.set("status", statusFilter);
+
       const [statusRes, jobRes] = await Promise.all([
-        fetch('/api/status'),
-        fetch(`/api/jobs?page=${page}&limit=${limit}`),
+        fetch("/api/status"),
+        fetch(`/api/jobs?${params.toString()}`),
       ]);
 
       if (statusRes.status === 401 || jobRes.status === 401) {
@@ -36,42 +46,36 @@ const JobPage = () => {
       const statusData = await statusRes.json();
       const jobData = await jobRes.json();
 
+      // Ignore stale responses (e.g. the user kept typing)
+      if (myRequest !== requestId.current) return;
+
       setStatuses(statusData);
       setJobs(jobData.jobs ?? []);
-      setTotalPages(jobData.totalPages ?? 1);
+      setTotalPages(Math.max(1, jobData.totalPages ?? 1));
+      setTotalJobs(jobData.totalJobs ?? 0);
     } catch {
-      setError("Failed to fetch data. Check if backend is running.");
+      if (myRequest === requestId.current) {
+        setError("Failed to fetch data. Check if backend is running.");
+      }
     } finally {
-      setLoading(false);
+      if (myRequest === requestId.current) setLoading(false);
     }
   };
 
+  // Wait until the user pauses typing before searching
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(searchTerm.trim()), 400);
+    return () => clearTimeout(t);
+  }, [searchTerm]);
+
+  // A new search or status filter always starts from page 1
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, statusFilter]);
+
   useEffect(() => {
     fetchData();
-  }, [page]);
-
-  useEffect(() => {
-    let result = jobs;
-
-    if (statusFilter !== "All") {
-      result = result.filter((job) => {
-        const label =
-          typeof job.status === "object" ? job.status?.label : job.status;
-        return label === statusFilter;
-      });
-    }
-
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      result = result.filter(
-        (job) =>
-          job.company.toLowerCase().includes(term) ||
-          job.role.toLowerCase().includes(term),
-      );
-    }
-
-    setFilteredJobs(result);
-  }, [searchTerm, statusFilter, jobs]);
+  }, [page, debouncedSearch, statusFilter]);
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this application?")) return;
@@ -130,7 +134,7 @@ const JobPage = () => {
         >
           <option value="All">All Statuses</option>
           {statuses.map((s) => (
-            <option key={s._id} value={s.label}>
+            <option key={s._id} value={s._id}>
               {s.label}
             </option>
           ))}
@@ -157,14 +161,14 @@ const JobPage = () => {
                   Loading…
                 </td>
               </tr>
-            ) : filteredJobs.length === 0 ? (
+            ) : jobs.length === 0 ? (
               <tr>
                 <td colSpan={5} style={styles.tdCenter}>
                   No applications found.
                 </td>
               </tr>
             ) : (
-              filteredJobs.map((job) => (
+              jobs.map((job) => (
                 <tr key={job._id} style={styles.tableRow}>
                   <td style={styles.td}>
                     <div style={styles.companyName}>{job.company}</div>
@@ -223,7 +227,7 @@ const JobPage = () => {
             Previous
           </button>
           <span style={styles.pageInfo}>
-            Page {page} of {totalPages}
+            Page {page} of {totalPages} ({totalJobs} jobs)
           </span>
           <button
             disabled={page === totalPages}

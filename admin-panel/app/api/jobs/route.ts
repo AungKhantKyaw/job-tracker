@@ -7,7 +7,13 @@ export async function GET(request: NextRequest) {
   const page = searchParams.get('page') || '1';
   const limit = searchParams.get('limit') || '10';
 
-  const response = await apiFetch(`${backendUrl}/job?page=${page}&limit=${limit}`, {
+  const params = new URLSearchParams({ page, limit });
+  const search = searchParams.get('search');
+  const status = searchParams.get('status');
+  if (search) params.set('search', search);
+  if (status) params.set('status', status);
+
+  const response = await apiFetch(`${backendUrl}/job?${params.toString()}`, {
     headers: {
       Cookie: request.headers.get('cookie') || '',
     },

@@ -25,7 +25,7 @@ const JobPage = () => {
     try {
       const [statusRes, jobRes] = await Promise.all([
         fetch('/api/status'),
-        fetch(`/api/jobs?page=1&limit=${limit}`),
+        fetch(`/api/jobs?page=${page}&limit=${limit}`),
       ]);
 
       if (statusRes.status === 401 || jobRes.status === 401) {

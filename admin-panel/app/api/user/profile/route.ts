@@ -2,7 +2,7 @@ import { apiFetch } from '@/lib/api';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
-  const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002';
+  const backendUrl = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002';
   const response = await apiFetch(`${backendUrl}/user/profile`, {
     headers: {
       Cookie: request.headers.get('cookie') || '',
@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002';
+  const backendUrl = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002';
   const body = await request.json();
   const response = await apiFetch(`${backendUrl}/user/profile`, {
     method: 'PUT',

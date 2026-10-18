@@ -6,7 +6,7 @@ export async function POST(
   { params }: { params: Promise<{ token: string }> }
 ) {
   const { token } = await params;
-  const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002';
+  const backendUrl = process.env.BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5002';
   const body = await request.json();
 
   const response = await apiFetch(`${backendUrl}/auth/reset-password/${token}`, {

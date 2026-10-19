@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useToast } from "@/components/ToastProvider";
 import styles from "./editJob.module.css";
 import { apiFetch } from "@/lib/api";
+import RichTextEditor from "@/components/RichTextEditor";
 
 interface EditProps {
   params: Promise<{ id: string }>;
@@ -295,11 +296,11 @@ export default function UserEditJobPage({ params: paramsPromise }: EditProps) {
           <Section label="Notes">
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               <Field label="Job Description">
-                <textarea
-                  name="description"
+                <RichTextEditor
                   value={formData.description}
-                  onChange={handleChange}
-                  className={styles.textarea}
+                  onChange={(html) =>
+                    setFormData((prev) => ({ ...prev, description: html }))
+                  }
                 />
               </Field>
               <Field label="Personal Notes">

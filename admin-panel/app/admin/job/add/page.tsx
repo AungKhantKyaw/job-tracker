@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 import type { Status, JobFormData } from "@/types";
 import { apiFetch } from "@/lib/api";
-
+import RichTextEditor from "@/components/RichTextEditor";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
@@ -218,11 +218,11 @@ const AddJobPage = () => {
           <div style={styles.sectionTitle}>Description & Notes</div>
           <div style={styles.textareaContainer}>
             <div style={styles.floatingGroup}>
-              <textarea
-                name="description"
+              <RichTextEditor
                 value={formData.description}
-                onChange={handleChange}
-                style={styles.floatingTextarea}
+                onChange={(html) =>
+                  setFormData((prev) => ({ ...prev, description: html }))
+                }
               />
               <label style={styles.floatingLabel}>Job Description</label>
             </div>

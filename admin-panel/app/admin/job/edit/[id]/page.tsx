@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import type { Status, JobFormData, StatusHistory } from "@/types";
 import { apiFetch } from "@/lib/api";
+import RichTextEditor from "@/components/RichTextEditor";
 
 interface EditProps {
   params: Promise<{ id: string }>;
@@ -274,11 +275,11 @@ const EditJobPage = ({ params: paramsPromise }: EditProps) => {
           <div style={styles.sectionTitle}>Description & Notes</div>
           <div style={styles.textareaContainer}>
             <div style={styles.floatingGroup}>
-              <textarea
-                name="description"
+              <RichTextEditor
                 value={formData.description}
-                onChange={handleChange}
-                style={styles.floatingTextarea}
+                onChange={(html) =>
+                  setFormData((prev) => ({ ...prev, description: html }))
+                }
               />
               <label style={styles.floatingLabel}>Job Description</label>
             </div>

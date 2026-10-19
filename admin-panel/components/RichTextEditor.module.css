@@ -1,0 +1,135 @@
+.wrapper {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  overflow: hidden;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.wrapper:focus-within {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 6px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.btn {
+  min-width: 30px;
+  height: 30px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: #334155;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.btn:hover:not(:disabled) {
+  background: #e2e8f0;
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.btnActive {
+  background: #dbeafe;
+  border-color: #93c5fd;
+  color: #1d4ed8;
+}
+
+.divider {
+  width: 1px;
+  margin: 4px 4px;
+  background: #e2e8f0;
+}
+
+/* The editable area. Tailwind's preflight removes list/heading styles,
+   so they are restored here. */
+.content :global(.ProseMirror) {
+  padding: 10px 12px;
+  min-height: var(--editor-min-height, 160px);
+  max-height: 480px;
+  overflow-y: auto;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #0f172a;
+  outline: none;
+}
+
+.content :global(.ProseMirror p) {
+  margin: 0 0 8px;
+}
+
+.content :global(.ProseMirror h1),
+.content :global(.ProseMirror h2),
+.content :global(.ProseMirror h3) {
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 12px 0 6px;
+}
+
+.content :global(.ProseMirror h1) {
+  font-size: 20px;
+}
+
+.content :global(.ProseMirror h2) {
+  font-size: 17px;
+}
+
+.content :global(.ProseMirror h3) {
+  font-size: 15px;
+}
+
+.content :global(.ProseMirror ul) {
+  list-style: disc;
+  padding-left: 22px;
+  margin: 0 0 8px;
+}
+
+.content :global(.ProseMirror ol) {
+  list-style: decimal;
+  padding-left: 22px;
+  margin: 0 0 8px;
+}
+
+.content :global(.ProseMirror li > p) {
+  margin: 0;
+}
+
+.content :global(.ProseMirror a) {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.content :global(.ProseMirror blockquote) {
+  border-left: 3px solid #cbd5e1;
+  margin: 0 0 8px;
+  padding-left: 12px;
+  color: #475569;
+}
+
+.content :global(.ProseMirror code) {
+  background: #f1f5f9;
+  border-radius: 4px;
+  padding: 1px 4px;
+  font-size: 13px;
+}
+
+.content :global(.ProseMirror pre) {
+  background: #f1f5f9;
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin: 0 0 8px;
+  overflow-x: auto;
+}

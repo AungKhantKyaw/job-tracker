@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useToast } from "@/components/ToastProvider";
 import styles from "./addJob.module.css";
 import { apiFetch } from "@/lib/api";
+import RichTextEditor from "@/components/RichTextEditor";
 
 interface Status {
   _id: string;
@@ -228,11 +229,11 @@ export default function UserAddJobPage() {
           <Section label="Notes">
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               <Field label="Job Description">
-                <textarea
-                  name="description"
+                <RichTextEditor
                   value={formData.description}
-                  onChange={handleChange}
-                  className={styles.textarea}
+                  onChange={(html) =>
+                    setFormData((prev) => ({ ...prev, description: html }))
+                  }
                 />
               </Field>
               <Field label="Personal Notes">

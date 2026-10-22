@@ -16,6 +16,7 @@ import {
 import { useToast } from "@/components/ToastProvider";
 import styles from "./dashboard.module.css";
 import { apiFetch } from "@/lib/api";
+import { formatDateOnly } from "@/lib/date";
 
 interface Status { _id: string; label: string; color: string; }
 interface Job { _id: string; role: string; company: string; location?: string; appliedDate?: string; createdAt?: string; status?: Status | string; }
@@ -255,7 +256,7 @@ export default function UserDashboard() {
                 </div>
                 <div style={{ flex: 1 }}>
                   <span className={styles.dateText}>
-                    {job.appliedDate ? new Date(job.appliedDate).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "—"}
+                    {formatDateOnly(job.appliedDate, "en-US", { month: "short", day: "numeric" }) || "—"}
                   </span>
                 </div>
                 <div style={{ width: 60, textAlign: "right" }}>

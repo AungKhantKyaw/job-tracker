@@ -1,0 +1,26 @@
+/* admin-panel/app/admin/job/job.module.css */
+
+/* The table is wider than the wrapper on narrow screens. The wrapper clips the
+   overflow (overflow: hidden), so without this the right-hand columns —
+   Applied, Follow-up and the Edit/Delete actions — become unreachable on
+   mobile. */
+.tableScroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.scrollHint {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .scrollHint {
+    display: block;
+    padding: 10px 16px;
+    font-size: 12px;
+    color: #94a3b8;
+    background-color: #f8fafc;
+    border-top: 1px solid #f3f4f6;
+    text-align: right;
+  }
+}

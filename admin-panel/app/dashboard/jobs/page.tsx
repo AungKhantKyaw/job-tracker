@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useToast } from "@/components/ToastProvider";
 import styles from "./jobs.module.css";
 import { apiFetch } from "@/lib/api";
+import { formatDateOnly } from "@/lib/date";
 
 interface Status {
   _id: string;
@@ -18,6 +19,7 @@ interface Job {
   role: string;
   location?: string;
   appliedDate?: string;
+  followupDate?: string;
   status?: Status | string;
 }
 
@@ -31,6 +33,15 @@ const getStatusLabel = (status: Job["status"]) => {
 const getStatusColor = (status: Job["status"]) => {
   if (status && typeof status === "object" && status.color) return status.color;
   return "#94a3b8";
+};
+
+const isOverdue = (followupDate?: string) => {
+  if (!followupDate) return false;
+  const followupStr = String(followupDate).split("T")[0];
+  const now = new Date();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const todayStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+  return followupStr < todayStr;
 };
 
 export default function UserJobsPage() {
@@ -189,64 +200,76 @@ export default function UserJobsPage() {
           </div>
         ) : (
           <>
-            <table className={styles.table}>
-              <thead>
-                <tr className={styles.thead}>
-                  <th className={styles.th}>Company</th>
-                  <th className={styles.th}>Role</th>
-                  <th className={styles.th}>Status</th>
-                  <th className={styles.th}>Applied</th>
-                  <th className={styles.th}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {jobs.map((job) => (
-                  <tr key={job._id} className={styles.tr}>
-                    <td className={styles.td}>
-                      <p className={styles.company}>{job.company}</p>
-                      <p className={styles.location}>{job.location || "Remote"}</p>
-                    </td>
-                    <td className={styles.td}>{job.role}</td>
-                    <td className={styles.td}>
-                      <span
-                        className={styles.badge}
-                        style={{
-                          backgroundColor: getStatusColor(job.status) + "18",
-                          color: getStatusColor(job.status),
-                        }}
-                      >
-                        {getStatusLabel(job.status)}
-                      </span>
-                    </td>
-                    <td className={styles.td}>
-                      {job.appliedDate
-                        ? new Date(job.appliedDate).toLocaleDateString()
-                        : "—"}
-                    </td>
-                    <td className={styles.td}>
-                      <div className={styles.actions}>
-                        <Link
-                          href={`/dashboard/jobs/edit/${job._id}`}
-                          className={styles.editBtn}
-                        >
-                          Edit
-                        </Link>
-                        <button
-                          onClick={() => handleDelete(job._id)}
-                          disabled={deletingId === job._id}
-                          className={styles.deleteBtn}
+            <div className={styles.tableScroll}>
+              <table className={styles.table}>
+                <thead>
+                  <tr className={styles.thead}>
+                    <th className={styles.th}>Company</th>
+                    <th className={styles.th}>Role</th>
+                    <th className={styles.th}>Status</th>
+                    <th className={styles.th}>Applied</th>
+                    <th className={styles.th}>Follow-up</th>
+                    <th className={styles.th}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {jobs.map((job) => (
+                    <tr
+                      key={job._id}
+                      className={`${styles.tr} ${isOverdue(job.followupDate) ? styles.trOverdue : ""}`}
+                    >
+                      <td className={styles.td}>
+                        <p className={styles.company}>{job.company}</p>
+                        <p className={styles.location}>{job.location || "Remote"}</p>
+                      </td>
+                      <td className={styles.td}>{job.role}</td>
+                      <td className={styles.td}>
+                        <span
+                          className={styles.badge}
                           style={{
-                            opacity: deletingId === job._id ? 0.5 : 1,
+                            backgroundColor: getStatusColor(job.status) + "18",
+                            color: getStatusColor(job.status),
                           }}
                         >
-                          {deletingId === job._id ? "…" : "Delete"}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                          {getStatusLabel(job.status)}
+                        </span>
+                      </td>
+                      <td className={styles.td}>
+                        {formatDateOnly(job.appliedDate) || "—"}
+                      </td>
+                      <td className={styles.td}>
+                        {job.followupDate ? (
+                          <span className={isOverdue(job.followupDate) ? styles.overdueDate : ""}>
+                            {formatDateOnly(job.followupDate)}
+                          </span>
+                        ) : "—"}
+                      </td>
+                      <td className={styles.td}>
+                        <div className={styles.actions}>
+                          <Link
+                            href={`/dashboard/jobs/edit/${job._id}`}
+                            className={styles.editBtn}
+                          >
+                            Edit
+                          </Link>
+                          <button
+                            onClick={() => handleDelete(job._id)}
+                            disabled={deletingId === job._id}
+                            className={styles.deleteBtn}
+                            style={{
+                              opacity: deletingId === job._id ? 0.5 : 1,
+                            }}
+                          >
+                            {deletingId === job._id ? "…" : "Delete"}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className={styles.scrollHint}>Swipe to see more →</div>
 
             {/* Pagination */}
             {totalPages > 1 && (

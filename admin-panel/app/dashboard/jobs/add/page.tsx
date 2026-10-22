@@ -20,6 +20,7 @@ interface FormData {
   salaryRange: string;
   status: string;
   appliedDate: string;
+  followupDate: string;
   link: string;
   description: string;
   contactPerson: string;
@@ -42,6 +43,7 @@ export default function UserAddJobPage() {
     salaryRange: "",
     status: "",
     appliedDate: new Date().toLocaleDateString("en-CA", { timeZone: "Pacific/Auckland" }),
+    followupDate: "",
     link: "",
     description: "",
     contactPerson: "",
@@ -86,7 +88,10 @@ export default function UserAddJobPage() {
       const res = await apiFetch(`/api/jobs`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          followupDate: formData.followupDate || null,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to create job.");
@@ -156,6 +161,15 @@ export default function UserAddJobPage() {
                   type="date"
                   name="appliedDate"
                   value={formData.appliedDate}
+                  onChange={handleChange}
+                  className={styles.input}
+                />
+              </Field>
+              <Field label="Follow-up Date">
+                <input
+                  type="date"
+                  name="followupDate"
+                  value={formData.followupDate}
                   onChange={handleChange}
                   className={styles.input}
                 />

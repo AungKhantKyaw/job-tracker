@@ -96,6 +96,30 @@
   overflow: hidden;
 }
 
+/* The table is wider than the card on narrow screens. Without this, the card
+   clips the overflow (overflow: hidden) and the right-hand columns — Applied,
+   Follow-up and the Edit/Delete actions — become unreachable on mobile. */
+.tableScroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.scrollHint {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .scrollHint {
+    display: block;
+    padding: 10px 16px;
+    font-size: 12px;
+    color: #94a3b8;
+    background-color: #f8fafc;
+    border-top: 1px solid #f1f5f9;
+    text-align: right;
+  }
+}
+
 .centerMsg {
   padding: 60px;
   text-align: center;
@@ -147,6 +171,16 @@
 
 .tr:hover {
   background: #f8fafc;
+}
+
+.trOverdue,
+.trOverdue:hover {
+  background-color: #fef2f2;
+}
+
+.overdueDate {
+  color: #dc2626;
+  font-weight: 600;
 }
 
 .td {

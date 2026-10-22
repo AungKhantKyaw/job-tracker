@@ -22,6 +22,7 @@ const AddJobPage = () => {
     salaryRange: "",
     status: "",
     appliedDate: new Date().toLocaleDateString("en-CA", { timeZone: "Pacific/Auckland" }),
+    followupDate: "",
     link: "",
     description: "",
     contactPerson: "",
@@ -74,7 +75,10 @@ const AddJobPage = () => {
       const res = await apiFetch(`/api/jobs`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          followupDate: formData.followupDate || null,
+        }),
       });
 
       const data = await res.json();
@@ -145,6 +149,16 @@ const AddJobPage = () => {
                 style={styles.floatingInput}
               />
               <label style={styles.floatingLabel}>Applied Date</label>
+            </div>
+            <div style={styles.floatingGroup}>
+              <input
+                type="date"
+                name="followupDate"
+                value={formData.followupDate || ""}
+                onChange={handleChange}
+                style={styles.floatingInput}
+              />
+              <label style={styles.floatingLabel}>Follow-up Date</label>
             </div>
           </div>
 

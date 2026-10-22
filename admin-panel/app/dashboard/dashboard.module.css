@@ -26,7 +26,7 @@
 }
 
 .greetingName { color: #2563eb; }
-.greetingSub { fontSize: 14px; color: #64748b; margin: 0; }
+.greetingSub { font-size: 14px; color: #64748b; margin: 0; }
 
 .addBtn {
   padding: 10px 20px;
@@ -116,7 +116,7 @@
 .loadingBox { height: 80px; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 14px; }
 
 /* Pipeline */
-.pipeline { display: flex; flexDirection: column; gap: 14px; }
+.pipeline { display: flex; flex-direction: column; gap: 14px; }
 .pipelineRow { display: flex; align-items: center; gap: 12px; }
 .pipelineLeft { display: flex; align-items: center; gap: 8px; width: 110px; flex-shrink: 0; }
 .pipelineDot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }

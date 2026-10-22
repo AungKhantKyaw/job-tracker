@@ -21,7 +21,7 @@ const AddJobPage = () => {
     location: "",
     salaryRange: "",
     status: "",
-    appliedDate: new Date().toISOString().split("T")[0],
+    appliedDate: new Date().toLocaleDateString("en-CA", { timeZone: "Pacific/Auckland" }),
     link: "",
     description: "",
     contactPerson: "",

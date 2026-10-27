@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useToast } from "@/components/ToastProvider";
 import styles from "./jobs.module.css";
 import { apiFetch } from "@/lib/api";
+import { errorMessage } from '@/lib/errors';
 import { formatDateOnly } from "@/lib/date";
 
 interface Status {
@@ -87,9 +88,9 @@ export default function UserJobsPage() {
       setStatuses(statusData);
       setJobs(jobData.jobs ?? []);
       setTotalPages(Math.max(1, jobData.totalPages ?? 1));
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (myRequest === requestId.current) {
-        toast.error(err.message || "Failed to fetch jobs.");
+        toast.error(errorMessage(err) || "unknown" || "Failed to fetch jobs.");
       }
     } finally {
       if (myRequest === requestId.current) setLoading(false);

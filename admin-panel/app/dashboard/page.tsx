@@ -16,6 +16,7 @@ import {
 import { useToast } from "@/components/ToastProvider";
 import styles from "./dashboard.module.css";
 import { apiFetch } from "@/lib/api";
+import { errorMessage } from '@/lib/errors';
 import { formatDateOnly } from "@/lib/date";
 
 interface Status { _id: string; label: string; color: string; }
@@ -55,8 +56,8 @@ export default function UserDashboard() {
       const profile = await profileRes.json();
       console.log('User role:', profile.role);
 
-      } catch(err: any) {
-        toast.error(err.message || "Failed to load job details.");
+      } catch (err: unknown) {
+        toast.error(errorMessage(err) || "unknown" || "Failed to load job details.");
       } finally {
         setLoading(false);
       }
@@ -226,7 +227,7 @@ export default function UserDashboard() {
         ) : recentJobs.length === 0 ? (
           <div className={styles.emptyState}>
             <span className={styles.emptyIcon}>🚀</span>
-            <p className={styles.emptyText}>No applications yet — let's change that!</p>
+            <p className={styles.emptyText}>No applications yet — let&apos;s change that!</p>
             <Link href="/dashboard/jobs/add" className={styles.emptyLink}>Add your first application →</Link>
           </div>
         ) : (

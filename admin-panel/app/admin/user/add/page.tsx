@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { UserFormData } from "@/types";
 import { apiFetch } from "@/lib/api";
+import { errorMessage } from '@/lib/errors';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
@@ -45,8 +46,8 @@ const AddUserPage = () => {
 
       router.push("/admin/user");
       router.refresh();
-    } catch (err: any) {
-      setError(err.message || "Failed to create user.");
+    } catch (err: unknown) {
+      setError(errorMessage(err) || "unknown" || "Failed to create user.");
     } finally {
       setLoading(false);
     }

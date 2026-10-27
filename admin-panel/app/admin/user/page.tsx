@@ -5,6 +5,7 @@ import Link from "next/link";
 
 import type { User, Pagination } from "@/types";
 import { apiFetch } from "@/lib/api";
+import { errorMessage } from '@/lib/errors';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
@@ -35,8 +36,8 @@ const UserListPage = () => {
 
       setUsers(data.users ?? []);
       setPagination(data.pagination ?? null);
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch users.");
+    } catch (err: unknown) {
+      setError(errorMessage(err) || "unknown" || "Failed to fetch users.");
     } finally {
       setLoading(false);
     }
@@ -64,8 +65,8 @@ const UserListPage = () => {
 
       // Remove from local state immediately
       setUsers((prev) => prev.filter((u) => u._id !== id));
-    } catch (err: any) {
-      alert(err.message || "Delete failed.");
+    } catch (err: unknown) {
+      alert(errorMessage(err) || "unknown" || "Delete failed.");
     } finally {
       setDeletingId(null);
     }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { type ReactNode } from "react";
 import { EditorContent, useEditor, useEditorState } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import styles from "./RichTextEditor.module.css";
@@ -17,6 +18,31 @@ const HTML_TAG = /<\/?[a-z][\s\S]*>/i;
 
 const escapeHtml = (s: string) =>
   s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+interface BtnProps {
+  label: ReactNode;
+  title: string;
+  active?: boolean;
+  disabled?: boolean;
+  onClick: () => void;
+}
+
+function Btn({ label, title, active, disabled, onClick }: BtnProps) {
+  return (
+    <button
+      type="button"
+      title={title}
+      aria-label={title}
+      aria-pressed={active}
+      disabled={disabled}
+      onMouseDown={(e) => e.preventDefault()}
+      onClick={onClick}
+      className={`${styles.btn} ${active ? styles.btnActive : ""}`}
+    >
+      {label}
+    </button>
+  );
+}
 
 /**
  * Old records may hold plain text with line breaks instead of HTML.
@@ -113,34 +139,6 @@ export default function RichTextEditor({
     const href = /^[a-z][a-z0-9+.-]*:/i.test(url) ? url : `https://${url}`;
     editor.chain().focus().extendMarkRange("link").setLink({ href }).run();
   };
-
-  const Btn = ({
-    label,
-    title,
-    active,
-    disabled,
-    onClick,
-  }: {
-    label: React.ReactNode;
-    title: string;
-    active?: boolean;
-    disabled?: boolean;
-    onClick: () => void;
-  }) => (
-    <button
-      type="button" // never submit the surrounding form
-      title={title}
-      aria-label={title}
-      aria-pressed={active}
-      disabled={disabled}
-      // keep the selection in the editor when a button is clicked
-      onMouseDown={(e) => e.preventDefault()}
-      onClick={onClick}
-      className={`${styles.btn} ${active ? styles.btnActive : ""}`}
-    >
-      {label}
-    </button>
-  );
 
   return (
     <div className={styles.wrapper}>

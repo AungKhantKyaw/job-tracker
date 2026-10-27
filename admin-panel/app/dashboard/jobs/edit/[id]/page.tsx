@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useToast } from "@/components/ToastProvider";
 import styles from "./editJob.module.css";
 import { apiFetch } from "@/lib/api";
+import { errorMessage } from '@/lib/errors';
 import RichTextEditor from "@/components/RichTextEditor";
 
 interface EditProps {
@@ -106,8 +107,8 @@ export default function UserEditJobPage({ params: paramsPromise }: EditProps) {
           appliedDate: formatDate(job.appliedDate),
           followupDate: formatDate(job.followupDate),
         });
-      } catch (err: any) {
-        toast.error(err.message || "Failed to load job details.");
+      } catch (err: unknown) {
+        toast.error(errorMessage(err) || "unknown" || "Failed to load job details.");
       } finally {
         setLoading(false);
       }
@@ -143,8 +144,8 @@ export default function UserEditJobPage({ params: paramsPromise }: EditProps) {
 
       toast.success("Application updated successfully!");
       router.push("/dashboard/jobs");
-    } catch (err: any) {
-      toast.error(err.message || "Failed to update.");
+    } catch (err: unknown) {
+      toast.error(errorMessage(err) || "unknown" || "Failed to update.");
     } finally {
       setSaving(false);
     }

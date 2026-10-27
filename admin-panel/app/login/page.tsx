@@ -7,6 +7,7 @@ import Image from "next/image";
 import styles from "./login.module.css";
 import { useToast } from "@/components/ToastProvider";
 import { apiFetch } from "@/lib/api";
+import { errorMessage } from '@/lib/errors';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
@@ -40,8 +41,8 @@ export default function LoginPage() {
       }
 
       router.push("/dashboard");
-    } catch (err: any) {
-      toast.error(err.message || "Login failed");
+    } catch (err: unknown) {
+      toast.error(errorMessage(err) || "unknown" || "Login failed");
     } finally {
       setLoading(false);
     }

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useToast } from "@/components/ToastProvider";
 import styles from "./addJob.module.css";
 import { apiFetch } from "@/lib/api";
+import { errorMessage } from '@/lib/errors';
 import RichTextEditor from "@/components/RichTextEditor";
 
 interface Status {
@@ -98,8 +99,8 @@ export default function UserAddJobPage() {
 
       toast.success("Application saved successfully!");
       router.push("/dashboard/jobs");
-    } catch (err: any) {
-      toast.error(err.message || "Failed to create job.");
+    } catch (err: unknown) {
+      toast.error(errorMessage(err) || "unknown" || "Failed to create job.");
     } finally {
       setLoading(false);
     }
@@ -116,7 +117,7 @@ export default function UserAddJobPage() {
       <div className={styles.card}>
         <h1 className={styles.title}>Add New Application</h1>
         <p className={styles.subtitle}>
-          Track a new job you've applied to or plan to apply for
+          Track a new job you&apos;ve applied to or plan to apply for
         </p>
 
         <form onSubmit={handleSubmit}>

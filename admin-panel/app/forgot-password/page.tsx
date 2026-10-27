@@ -6,6 +6,7 @@ import styles from "./forgot.module.css";
 import Image from "next/image";
 import { useToast } from "@/components/ToastProvider";
 import { apiFetch } from "@/lib/api";
+import { errorMessage } from '@/lib/errors';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -40,8 +41,8 @@ export default function ForgotPasswordPage() {
       if (!res.ok) throw new Error(data.message || "Something went wrong.");
 
       setSubmitted(true);
-    } catch (err: any) {
-      toast.error(err.message || "Something went wrong. Please try again.");
+    } catch (err: unknown) {
+      toast.error(errorMessage(err) || "unknown" || "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }

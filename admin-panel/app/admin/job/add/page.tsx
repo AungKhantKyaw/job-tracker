@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import type { Status, JobFormData } from "@/types";
 import { apiFetch } from "@/lib/api";
+import { errorMessage } from '@/lib/errors';
 import RichTextEditor from "@/components/RichTextEditor";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
@@ -87,8 +88,8 @@ const AddJobPage = () => {
         throw new Error(data.message || "Failed to create job entry.");
 
       router.push("/admin/job");
-    } catch (err: any) {
-      setError(err.message || "Failed to create job entry.");
+    } catch (err: unknown) {
+      setError(errorMessage(err) || "unknown" || "Failed to create job entry.");
     } finally {
       setLoading(false);
     }

@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { formatDateOnly } from "@/lib/date";
+import jobStyles from "./job.module.css";
 import type { Status, Job } from "@/types";
 import { apiFetch } from "@/lib/api";
 
@@ -39,7 +41,7 @@ const JobPage = () => {
       ]);
 
       if (statusRes.status === 401 || jobRes.status === 401) {
-        window.location.href = "/login";
+        window.location.href = "/login?session=expired";
         return;
       }
 
@@ -108,6 +110,15 @@ const JobPage = () => {
     return status;
   };
 
+  const isOverdue = (followupDate?: string) => {
+    if (!followupDate) return false;
+    const followupStr = String(followupDate).split("T")[0];
+    const now = new Date();
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const todayStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+    return followupStr < todayStr;
+  };
+
   return (
     <div style={styles.container}>
       <div style={styles.header}>
@@ -144,6 +155,7 @@ const JobPage = () => {
       {error && <div style={styles.error}>{error}</div>}
 
       <div style={styles.tableWrapper}>
+        <div className={jobStyles.tableScroll}>
         <table style={styles.table}>
           <thead>
             <tr style={styles.tableHeaderRow}>
@@ -151,25 +163,32 @@ const JobPage = () => {
               <th style={styles.th}>Role</th>
               <th style={styles.th}>Status</th>
               <th style={styles.th}>Applied</th>
+              <th style={styles.th}>Follow-up</th>
               <th style={styles.th}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={5} style={styles.tdCenter}>
+                <td colSpan={6} style={styles.tdCenter}>
                   Loading…
                 </td>
               </tr>
             ) : jobs.length === 0 ? (
               <tr>
-                <td colSpan={5} style={styles.tdCenter}>
+                <td colSpan={6} style={styles.tdCenter}>
                   No applications found.
                 </td>
               </tr>
             ) : (
               jobs.map((job) => (
-                <tr key={job._id} style={styles.tableRow}>
+                <tr
+                  key={job._id}
+                  style={{
+                    ...styles.tableRow,
+                    ...(isOverdue(job.followupDate) ? styles.overdueRow : {}),
+                  }}
+                >
                   <td style={styles.td}>
                     <div style={styles.companyName}>{job.company}</div>
                     <div style={styles.location}>
@@ -190,7 +209,19 @@ const JobPage = () => {
                     </span>
                   </td>
                   <td style={styles.td}>
-                    {job.appliedDate ? new Date(job.appliedDate).toLocaleDateString() : "N/A"}
+                    {formatDateOnly(job.appliedDate) || "—"}
+                  </td>
+                  <td style={styles.td}>
+                    {job.followupDate ? (
+                      <span
+                        style={isOverdue(job.followupDate) ? styles.overdueDate : undefined}
+                        title={isOverdue(job.followupDate) ? "Follow-up overdue" : undefined}
+                      >
+                        {formatDateOnly(job.followupDate)}
+                      </span>
+                    ) : (
+                      "—"
+                    )}
                   </td>
                   <td style={styles.td}>
                     <div style={styles.actionGroup}>
@@ -217,6 +248,8 @@ const JobPage = () => {
             )}
           </tbody>
         </table>
+        </div>
+        <div className={jobStyles.scrollHint}>Swipe to see more →</div>
 
         <div style={styles.pagination}>
           <button
@@ -320,6 +353,13 @@ const styles: { [key: string]: React.CSSProperties } = {
     padding: "6px 12px",
     borderRadius: "8px",
     fontSize: "12px",
+    fontWeight: "700",
+  },
+  overdueRow: {
+    backgroundColor: "#fef2f2",
+  },
+  overdueDate: {
+    color: "#dc2626",
     fontWeight: "700",
   },
   actionGroup: { display: "flex", gap: "12px", alignItems: "center" },

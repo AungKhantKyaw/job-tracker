@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useToast } from "@/components/ToastProvider";
 import styles from "./profile.module.css";
 import { apiFetch } from "@/lib/api";
+import { errorMessage } from '@/lib/errors';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
@@ -77,7 +78,10 @@ export default function UserProfilePage() {
 
     setSaving(true);
     try {
-      const userBody: any = { name: formData.name.trim(), email: formData.email };
+      const userBody: { name: string; email: string; password?: string } = {
+        name: formData.name.trim(),
+        email: formData.email,
+      };
       if (formData.password) userBody.password = formData.password;
 
       const userRes = await apiFetch(`/api/user/profile`, {
@@ -106,8 +110,8 @@ export default function UserProfilePage() {
 
       setFormData((prev) => ({ ...prev, password: "", confirm: "" }));
       toast.success("Profile updated successfully.");
-    } catch (err: any) {
-      toast.error(err.message || "Something went wrong.");
+    } catch (err: unknown) {
+      toast.error(errorMessage(err) || "unknown" || "Something went wrong.");
     } finally {
       setSaving(false);
     }

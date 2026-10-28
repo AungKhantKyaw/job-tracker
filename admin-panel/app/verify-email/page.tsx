@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { errorMessage } from '@/lib/errors';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
@@ -29,9 +30,9 @@ export default function VerifyEmailPage() {
         if (!res.ok) throw new Error(data.message || "Verification failed.");
         setState("success");
         setMessage(data.message);
-      } catch (err: any) {
+      } catch (err: unknown) {
         setState("error");
-        setMessage(err.message || "Something went wrong.");
+        setMessage(errorMessage(err) || "unknown" || "Something went wrong.");
       }
     };
 

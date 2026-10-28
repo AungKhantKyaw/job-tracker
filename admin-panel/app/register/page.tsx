@@ -7,6 +7,7 @@ import Image from "next/image";
 import styles from "./register.module.css";
 import { useToast } from "@/components/ToastProvider";
 import { apiFetch } from "@/lib/api";
+import { errorMessage } from '@/lib/errors';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
@@ -56,8 +57,8 @@ export default function RegisterPage() {
       if (!res.ok) throw new Error(data.message);
 
       router.push("/login?registered=true");
-    } catch (err: any) {
-      toast.error(err.message || "Registration failed");
+    } catch (err: unknown) {
+      toast.error(errorMessage(err) || "unknown" || "Registration failed");
     } finally {
       setLoading(false);
     }

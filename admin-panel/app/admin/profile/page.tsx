@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import type { LoginFormData } from "@/types";
 import { apiFetch } from "@/lib/api";
+import { errorMessage } from '@/lib/errors';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
@@ -76,8 +77,8 @@ const ProfilePage = () => {
 
       setFormData((prev) => ({ ...prev, password: "" }));
       setMessage({ type: "success", text: "Profile updated successfully!" });
-    } catch (err: any) {
-      setMessage({ type: "error", text: err.message || "Update failed." });
+    } catch (err: unknown) {
+      setMessage({ type: "error", text: errorMessage(err) || "unknown" || "Update failed." });
     } finally {
       setLoading(false);
     }

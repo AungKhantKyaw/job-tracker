@@ -6,6 +6,7 @@ import Link from "next/link";
 
 import type { UserFormData } from "@/types";
 import { apiFetch } from "@/lib/api";
+import { errorMessage } from '@/lib/errors';
 
 
 interface FormData {
@@ -56,8 +57,8 @@ const EditUserPage = () => {
           isVerified: data.isVerified || false,
           password: "",
         });
-      } catch (err: any) {
-        setMessage({ type: "error", text: err.message || "Failed to load user data." });
+      } catch (err: unknown) {
+        setMessage({ type: "error", text: errorMessage(err) || "unknown" || "Failed to load user data." });
       } finally {
         setLoading(false);
       }
@@ -81,7 +82,7 @@ const EditUserPage = () => {
     setMessage({ type: "", text: "" });
 
     try {      
-      const body: Partial<FormData> = { ...(formData as any) };
+      const body: Partial<UserFormData> = { ...formData };
       
       if (!body.password) {
         delete body.password;
@@ -101,8 +102,8 @@ const EditUserPage = () => {
 
       setMessage({ type: "success", text: "User updated successfully!" });
       setTimeout(() => router.push("/admin/user"), 1500);
-    } catch (err: any) {
-      setMessage({ type: "error", text: err.message || "Update failed." });
+    } catch (err: unknown) {
+      setMessage({ type: "error", text: errorMessage(err) || "unknown" || "Update failed." });
     } finally {
       setSaving(false);
     }

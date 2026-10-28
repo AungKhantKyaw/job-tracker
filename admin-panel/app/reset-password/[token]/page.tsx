@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useToast } from "@/components/ToastProvider";
 import { apiFetch } from "@/lib/api";
+import { errorMessage } from '@/lib/errors';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
@@ -48,8 +49,8 @@ export default function ResetPasswordPage({ params: paramsPromise }: Props) {
       if (!res.ok) throw new Error(data.message || "Reset failed.");
       setSuccess(true);
       setTimeout(() => router.push("/login"), 3000);
-    } catch (err: any) {
-      toast.error(err.message || "Something went wrong. Please try again.");
+    } catch (err: unknown) {
+      toast.error(errorMessage(err) || "unknown" || "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -276,7 +277,7 @@ export default function ResetPasswordPage({ params: paramsPromise }: Props) {
                       margin: "4px 0 0",
                     }}
                   >
-                    Passwords don't match
+                    Passwords don&apos;t match
                   </p>
                 )}
                 {confirm && password === confirm && password.length >= 8 && (

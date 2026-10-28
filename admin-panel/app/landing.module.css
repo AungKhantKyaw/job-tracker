@@ -172,7 +172,7 @@
 .heroInner {
   position: relative;
   z-index: 1;
-  maxWidth: 1200px;
+  max-width: 1200px;
   margin: 0 auto;
   width: 100%;
   display: flex;
@@ -301,7 +301,7 @@
 
 /* --- Sections --- */
 .section { padding: 100px 48px; background-color: #080b12; }
-.sectionInner { maxWidth: 1100px; margin: 0 auto; }
+.sectionInner { max-width: 1100px; margin: 0 auto; }
 .sectionEyebrow { font-size: 12px; font-weight: 600; color: #2563eb; text-transform: uppercase; margin-bottom: 12px; }
 .sectionH2 { font-size: clamp(32px, 4vw, 48px); font-weight: 400; color: #f8fafc; margin: 0 0 56px; }
 
@@ -317,14 +317,14 @@
 
 .featureCard:hover { transform: translateY(-4px); border-color: rgba(255,255,255,0.15); }
 .featureIcon { font-size: 22px; width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
-.featureTitle { font-size: 16px; fontWeight: 600; color: #f1f5f9; margin-bottom: 8px; }
-.featureDesc { font-size: 14px; lineHeight: 1.65; color: #64748b; }
+.featureTitle { font-size: 16px; font-weight: 600; color: #f1f5f9; margin-bottom: 8px; }
+.featureDesc { font-size: 14px; line-height: 1.65; color: #64748b; }
 
 .stepsRow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; position: relative; }
 .step { position: relative; }
 .stepNum { font-size: 56px; color: rgba(37,99,235,0.2); line-height: 1; margin-bottom: 16px; display: block; }
-.stepTitle { font-size: 18px; fontWeight: 600; color: #f1f5f9; margin-bottom: 10px; }
-.stepDesc { font-size: 14px; lineHeight: 1.7; color: #64748b; }
+.stepTitle { font-size: 18px; font-weight: 600; color: #f1f5f9; margin-bottom: 10px; }
+.stepDesc { font-size: 14px; line-height: 1.7; color: #64748b; }
 
 /* --- CTA Banner --- */
 .ctaBanner {

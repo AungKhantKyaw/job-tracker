@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import type { Status, JobFormData, StatusHistory } from "@/types";
 import { apiFetch } from "@/lib/api";
+import { errorMessage } from '@/lib/errors';
 import RichTextEditor from "@/components/RichTextEditor";
 
 interface EditProps {
@@ -72,8 +73,8 @@ const EditJobPage = ({ params: paramsPromise }: EditProps) => {
           appliedDate: formatDate(job.appliedDate),
           followupDate: formatDate(job.followupDate),
         });
-      } catch (err: any) {
-        setError(err.message || "Failed to load job details.");
+      } catch (err: unknown) {
+        setError(errorMessage(err) || "unknown" || "Failed to load job details.");
       } finally {
         setLoading(false);
       }
@@ -113,8 +114,8 @@ const EditJobPage = ({ params: paramsPromise }: EditProps) => {
         throw new Error(data.message || "Failed to update job application.");
 
       router.push("/admin/job");
-    } catch (err: any) {
-      setError(err.message || "Failed to update job application.");
+    } catch (err: unknown) {
+      setError(errorMessage(err) || "unknown" || "Failed to update job application.");
     } finally {
       setSaving(false);
     }

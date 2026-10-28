@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { StatusItem } from "@/types";
+import { errorMessage } from '@/lib/errors';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
 
@@ -30,8 +31,8 @@ const StatusPage = () => {
 
       setStatusData(await res.json());
       setError("");
-    } catch (err: any) {
-      setError(err.message || "Failed to load statuses.");
+    } catch (err: unknown) {
+      setError(errorMessage(err) || "unknown" || "Failed to load statuses.");
     } finally {
       setLoading(false);
     }
@@ -57,8 +58,8 @@ const StatusPage = () => {
       setNewLabel("");
       setNewColor("#3182ce");
       fetchStatus();
-    } catch (err: any) {
-      setError(err.message || "Error adding status.");
+    } catch (err: unknown) {
+      setError(errorMessage(err) || "unknown" || "Error adding status.");
     }
   };
 
@@ -76,8 +77,8 @@ const StatusPage = () => {
 
       setEditingId(null);
       fetchStatus();
-    } catch (err: any) {
-      setError(err.message || "Error updating status.");
+    } catch (err: unknown) {
+      setError(errorMessage(err) || "unknown" || "Error updating status.");
     }
   };
 
@@ -98,8 +99,8 @@ const StatusPage = () => {
       if (!res.ok) throw new Error(data.message || "Error deleting status.");
 
       setStatusData((prev) => prev.filter((s) => s._id !== id));
-    } catch (err: any) {
-      setError(err.message || "Error deleting status.");
+    } catch (err: unknown) {
+      setError(errorMessage(err) || "unknown" || "Error deleting status.");
     }
   };
 

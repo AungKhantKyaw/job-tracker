@@ -1,0 +1,59 @@
+# Clean install, cache/restore, and verify each Node package in the repo.
+# See https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
+name: Node.js CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+# Cancel a previous run of the same ref when a newer commit arrives.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (Node 20)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js 20
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: 'npm'
+        cache-dependency-path: backend/package-lock.json
+    - name: Install dependencies
+      run: npm ci
+    - name: Run tests
+      run: npm test
+
+  admin-panel:
+    name: Admin panel (Node 20)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: admin-panel
+    steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js 20
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: 'npm'
+        cache-dependency-path: admin-panel/package-lock.json
+    - name: Install dependencies
+      run: npm ci
+    # Enforces no `any` types and React hooks correctness (project standard).
+    - name: Lint
+      run: npm run lint
+    - name: Build
+      run: npm run build

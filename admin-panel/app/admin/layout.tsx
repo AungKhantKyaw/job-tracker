@@ -14,11 +14,13 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [isAuthorized, setIsAuthorized] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
-  useEffect(() => {
+  // Authorization is derived synchronously from sessionStorage (saved by the
+  // login page), so the effect below only needs to drive navigation — it never
+  // calls setState, which avoids cascading renders.
+  const { authorized, target } = (() => {
     let role = "";
     try {
       const user = JSON.parse(sessionStorage.getItem("user") || "null");
@@ -28,22 +30,21 @@ export default function AdminLayout({
     }
 
     // Not logged in (the session user is saved by the login page)
-    if (!role) {
-      router.replace("/login");
-      return;
-    }
+    if (!role) return { authorized: false, target: "/login" };
 
     const needsAdmin = ADMIN_ONLY_PATHS.some((p) => pathname.startsWith(p));
     if (needsAdmin && role !== "admin") {
-      router.replace("/dashboard");
-      return;
+      return { authorized: false, target: "/dashboard" };
     }
+    return { authorized: true, target: null };
+  })();
 
-    setIsAuthorized(true);
-  }, [router, pathname]);
+  useEffect(() => {
+    if (target) router.replace(target);
+  }, [router, target]);
 
   // Don't flash private content before the check finishes
-  if (!isAuthorized) {
+  if (!authorized) {
     return (
       <div style={styles.loadingWrapper}>
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>

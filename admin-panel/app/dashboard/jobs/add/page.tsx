@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useToast } from "@/components/ToastProvider";
 import styles from "./addJob.module.css";
 import { apiFetch } from "@/lib/api";
+import { errorMessage } from '@/lib/errors';
 import RichTextEditor from "@/components/RichTextEditor";
 
 interface Status {
@@ -20,6 +21,7 @@ interface FormData {
   salaryRange: string;
   status: string;
   appliedDate: string;
+  followupDate: string;
   link: string;
   description: string;
   contactPerson: string;
@@ -42,6 +44,7 @@ export default function UserAddJobPage() {
     salaryRange: "",
     status: "",
     appliedDate: new Date().toLocaleDateString("en-CA", { timeZone: "Pacific/Auckland" }),
+    followupDate: "",
     link: "",
     description: "",
     contactPerson: "",
@@ -86,15 +89,18 @@ export default function UserAddJobPage() {
       const res = await apiFetch(`/api/jobs`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          followupDate: formData.followupDate || null,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to create job.");
 
       toast.success("Application saved successfully!");
       router.push("/dashboard/jobs");
-    } catch (err: any) {
-      toast.error(err.message || "Failed to create job.");
+    } catch (err: unknown) {
+      toast.error(errorMessage(err) || "unknown" || "Failed to create job.");
     } finally {
       setLoading(false);
     }
@@ -111,7 +117,7 @@ export default function UserAddJobPage() {
       <div className={styles.card}>
         <h1 className={styles.title}>Add New Application</h1>
         <p className={styles.subtitle}>
-          Track a new job you've applied to or plan to apply for
+          Track a new job you&apos;ve applied to or plan to apply for
         </p>
 
         <form onSubmit={handleSubmit}>
@@ -156,6 +162,15 @@ export default function UserAddJobPage() {
                   type="date"
                   name="appliedDate"
                   value={formData.appliedDate}
+                  onChange={handleChange}
+                  className={styles.input}
+                />
+              </Field>
+              <Field label="Follow-up Date">
+                <input
+                  type="date"
+                  name="followupDate"
+                  value={formData.followupDate}
                   onChange={handleChange}
                   className={styles.input}
                 />

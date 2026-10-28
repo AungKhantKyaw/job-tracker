@@ -41,7 +41,7 @@ const JobPage = () => {
       ]);
 
       if (statusRes.status === 401 || jobRes.status === 401) {
-        window.location.href = "/login";
+        window.location.href = "/login?session=expired";
         return;
       }
 

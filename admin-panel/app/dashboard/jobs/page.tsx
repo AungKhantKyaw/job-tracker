@@ -79,6 +79,11 @@ export default function UserJobsPage() {
         fetch(`/api/jobs?${params.toString()}`),
       ]);
 
+      if (statusRes.status === 401 || jobRes.status === 401) {
+        window.location.href = "/login?session=expired";
+        return;
+      }
+
       const statusData = await statusRes.json();
       const jobData = await jobRes.json();
 

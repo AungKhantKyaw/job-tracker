@@ -65,10 +65,13 @@ export default function UserDashboard() {
     fetchJobs();
   }, []);
 
-  const stats = useMemo(() => ({
+    const stats = useMemo(() => ({
     total: jobs.length,
     applied: jobs.filter((j) => getStatusLabel(j.status) === "Applied").length,
-    interviewing: jobs.filter((j) => getStatusLabel(j.status) === "Interviewing").length,
+    interviewing:
+      jobs.filter((j) => getStatusLabel(j.status) === "Phone Screen").length +
+      jobs.filter((j) => getStatusLabel(j.status) === "First Interview").length +
+      jobs.filter((j) => getStatusLabel(j.status) === "Second Interview").length,
     offered: jobs.filter((j) => getStatusLabel(j.status) === "Offered").length,
     rejected: jobs.filter((j) => getStatusLabel(j.status) === "Rejected").length,
   }), [jobs]);
@@ -126,9 +129,9 @@ export default function UserDashboard() {
         {[
           { label: "Total", value: stats.total, color: "#2563eb", bg: "#eff6ff", sub: "applications", delay: "0.05s" },
           { label: "Applied", value: stats.applied, color: "#8b5cf6", bg: "#f5f3ff", sub: "waiting", delay: "0.1s" },
-          { label: "Interviewing", value: stats.interviewing, color: "#f59e0b", bg: "#fffbeb", sub: "in progress", delay: "0.15s" },
-          { label: "Offered", value: stats.offered, color: "#10b981", bg: "#ecfdf5", sub: "🎉 congrats", delay: "0.2s" },
-          { label: "Success Rate", value: `${successRate}%`, color: "#0ea5e9", bg: "#f0f9ff", sub: "interview rate", delay: "0.25s" },
+          { label: "Interviewing Total", value: stats.interviewing, color: "#f59e0b", bg: "#fffbeb", sub: "overall", delay: "0.15s" },
+          { label: "Offered", value: stats.offered, color: "#10b981", bg: "#ecfdf5", sub: "🎉 congrats", delay: "0.24s" },
+          { label: "Success Rate", value: `${successRate}%`, color: "#0ea5e9", bg: "#f0f9ff", sub: "interview rate", delay: "0.27s" },
         ].map((s) => (
           <div key={s.label} className={styles.statCard} style={{ animationDelay: s.delay }}>
             <div className={styles.statIconBg} style={{ backgroundColor: s.bg }}>
@@ -188,7 +191,7 @@ export default function UserDashboard() {
             <div className={styles.pipeline}>
               {[
                 { label: "Applied", value: stats.applied, color: "#8b5cf6" },
-                { label: "Interviewing", value: stats.interviewing, color: "#f59e0b" },
+                { label: "Interviewing Total", value: stats.interviewing, color: "#f59e0b" },
                 { label: "Offered", value: stats.offered, color: "#10b981" },
                 { label: "Rejected", value: stats.rejected, color: "#ef4444" },
               ].map((s) => (
@@ -258,6 +261,16 @@ export default function UserDashboard() {
                 <div style={{ flex: 1 }}>
                   <span className={styles.dateText}>
                     {formatDateOnly(job.appliedDate, "en-US", { month: "short", day: "numeric" }) || "—"}
+                  </span>
+                  <span className={styles.interviewBadge} style={{
+                    display: getStatusLabel(job.status) === "Phone Screen" ? "inline" : "none",
+                    marginLeft: "8px",
+                    fontSize: "11px",
+                    fontWeight: "600",
+                    color: "#0284c7",
+                    textTransform: "capitalize",
+                  }}>
+                    {getStatusLabel(job.status)}
                   </span>
                 </div>
                 <div style={{ width: 60, textAlign: "right" }}>

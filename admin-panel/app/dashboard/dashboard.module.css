@@ -166,3 +166,6 @@
 @media (max-width: 640px) {
   .hideMobile { display: none !important; }
 }
+
+/* Interview stage badge in the recent jobs table */
+.interviewBadge { font-size: 11px; font-weight: 600; padding: 2px 6px; border-radius: 4px; }

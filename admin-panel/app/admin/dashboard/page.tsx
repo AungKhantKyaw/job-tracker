@@ -97,7 +97,6 @@ const AdminDashboard = () => {
             + Add Application
           </Link>
         </header>
-
         {/* Stats Grid */}
         <div className={styles.statsGrid}>
           <div className={styles.statCard} style={{ borderLeftColor: "#2563eb" }}>

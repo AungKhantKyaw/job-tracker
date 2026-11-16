@@ -11,14 +11,14 @@ const AdminHeader = () => {
   const [userRole, setUserRole] = useState("");
   const router = useRouter();
 
-  useEffect(() => {    
+  useEffect(() => {
     try {
       const userJson = sessionStorage.getItem("user");
       if (userJson) {
         const user = JSON.parse(userJson);
         setUserName(user.name || "User");
         setUserRole(user.role || "user");
-      } else {       
+      } else {
         router.push("/login");
       }
     } catch {
@@ -70,9 +70,9 @@ const styles: { [key: string]: React.CSSProperties } = {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    borderBottom: "1px solid #eee",
+    borderBottom: "2px solid #2563eb",
     padding: "12px 30px",
-    backgroundColor: "#fff",
+    backgroundColor: "#ffffff",
     position: "sticky",
     top: 0,
     zIndex: 100,
@@ -85,12 +85,12 @@ const styles: { [key: string]: React.CSSProperties } = {
   logo: {
     fontSize: "1.25rem",
     fontWeight: "800",
-    color: "#111827",
+    color: "#0f172b",
     margin: 0,
     letterSpacing: "-0.5px",
   },
   welcomeText: {
-    color: "#666",
+    color: "#64748b",
     fontSize: "14px",
     display: "flex",
     alignItems: "center",
@@ -98,12 +98,12 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   roleBadge: {
     fontSize: "10px",
-    backgroundColor: "#f3f4f6",
+    backgroundColor: "#eff6ff",
     padding: "2px 6px",
     borderRadius: "4px",
     textTransform: "uppercase",
     fontWeight: "700",
-    color: "#374151",
+    color: "#1d4ed8",
   },
   nav: {
     display: "flex",
@@ -112,24 +112,24 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   navLink: {
     textDecoration: "none",
-    color: "#0070f3",
+    color: "#475569",
     fontSize: "14px",
     fontWeight: "500",
   },
   navLinkAdmin: {
     textDecoration: "none",
-    color: "#111827",
+    color: "#2563eb",
     fontSize: "14px",
     fontWeight: "700",
   },
   logoutBtn: {
-    background: "#ef4444",
-    color: "white",
+    background: "#dc2626",
+    color: "#fff",
     border: "none",
     padding: "8px 16px",
     borderRadius: "6px",
     cursor: "pointer",
-    fontWeight: "600",
+    fontWeight: "700",
     fontSize: "13px",
   },
 };

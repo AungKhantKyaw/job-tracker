@@ -10,7 +10,7 @@
 .overlay {
   position: fixed;
   inset: 0;
-  background-color: rgba(15, 23, 42, 0.5);
+  background-color: rgba(15, 23, 43, 0.5);
   backdrop-filter: blur(4px);
   z-index: 40;
 }
@@ -31,12 +31,12 @@
 
 .sidebarTop {
   padding: 24px 20px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .logoImage {
   height: 60px;
-  width: auto;  
+  width: auto;
 }
 
 .nav {
@@ -50,7 +50,7 @@
 .navSection {
   font-size: 11px;
   font-weight: 600;
-  color: #94a3b8;
+  color: #64748b;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   padding: 0 12px;
@@ -71,16 +71,16 @@
 }
 
 .navItem:hover {
-  background: #f1f5f9;
+  background: #eff6ff;
 }
 
 .navItemActive {
-  background: #f0f7ff !important;
+  background: #eff6ff !important;
   color: #2563eb !important;
 }
 
 .navIcon {
-  color: #94a3b8;
+  color: #64748b;
   display: flex;
   flex-shrink: 0;
 }
@@ -91,7 +91,7 @@
 
 .sidebarFooter {
   padding: 16px 12px;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid #e2e8f0;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -108,8 +108,8 @@
   width: 38px;
   height: 38px;
   border-radius: 10px;
-  background-color: #e0f2fe;
-  color: #0369a1;
+  background-color: #2563eb;
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -126,7 +126,7 @@
 .userName {
   font-size: 14px;
   font-weight: 600;
-  color: #0f172a;
+  color: #0f172b;
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
@@ -175,14 +175,14 @@
   justify-content: space-between;
   padding: 12px 16px;
   border-bottom: 1px solid #e2e8f0;
-  background-color: #fff;
+  background-color: #ffffff;
   position: sticky;
   top: 0;
   z-index: 30;
 }
 
 .hamburger {
-  background: #f8fafc;
+  background: #eff6ff;
   border: 1px solid #e2e8f0;
   border-radius: 6px;
   cursor: pointer;
@@ -195,15 +195,15 @@
 .logoImageMobile {
   height: 32px;
   width: auto;
-  filter: brightness(0) saturate(100%) invert(13%) sepia(21%);
+  filter: brightness(0) saturate(100%) invert(31%) sepia(95%) hue-rotate(198deg) saturate(6) brightness(1) contrast(1.1);
 }
 
 .mobileAvatar {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background-color: #e0f2fe;
-  color: #0369a1;
+  background-color: #2563eb;
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -213,7 +213,7 @@
 
 .content {
   flex: 1;
-  padding: 40px;
+  padding: 28px;
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
@@ -224,7 +224,7 @@
   .sidebar {
     position: fixed;
     transform: translateX(-100%);
-    box-shadow: 10px 0 15px -3px rgba(0, 0, 0, 0.1);
+    box-shadow: 10px 0 15px -3px rgba(15, 23, 43, 0.1);
   }
 
   .sidebarOpen {

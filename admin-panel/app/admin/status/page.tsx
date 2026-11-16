@@ -5,6 +5,7 @@ import type { StatusItem } from "@/types";
 import { errorMessage } from '@/lib/errors';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002";
+const BRAND = { primary: "#2563eb", dark: "#1d4ed8", accent: "#fff", white: "#ffffff", muted: "#64748b", danger: "#dc2626" };
 
 const StatusPage = () => {
   const [statusData, setStatusData] = useState<StatusItem[]>([]);
@@ -118,7 +119,7 @@ const StatusPage = () => {
           Define funnel stages and their visual colors.
         </p>
 
-        {error && <div style={styles.errorBanner}>✕ {error}</div>}
+        {error && <div style={{ ...styles.errorBanner, backgroundColor: BRAND.danger + "22", borderColor: BRAND.danger + "15" }}>✕ {error}</div>}
 
         {/* Add Form */}
         <form onSubmit={handleAdd} style={styles.form}>
@@ -126,7 +127,7 @@ const StatusPage = () => {
             type="color"
             value={newColor}
             onChange={(e) => setNewColor(e.target.value)}
-            style={styles.colorPicker}
+            style={{ ...styles.colorPicker, backgroundColor: "#ffffff", borderColor: "#e2e8f0" }}
             title="Choose status color"
           />
           <input
@@ -137,10 +138,10 @@ const StatusPage = () => {
               setNewLabel(e.target.value);
               setError("");
             }}
-            style={styles.input}
+            style={{ ...styles.input, borderColor: "#e2e8f0", backgroundColor: "#ffffff" }}
             required
           />
-          <button type="submit" style={styles.addButton}>
+          <button type="submit" style={{ ...styles.addButton, backgroundColor: BRAND.primary, color: BRAND.white }}>
             Add
           </button>
         </form>
@@ -219,25 +220,26 @@ const StatusPage = () => {
 
 const styles: { [key: string]: React.CSSProperties } = {
   container: {
-    padding: "40px 20px",
+    padding: "24px 28px 32px",
     minHeight: "100vh",
     fontFamily: '"Inter", sans-serif',
+    backgroundColor: "#f8fafc",
   },
   card: {
     maxWidth: "600px",
     margin: "0 auto",
-    backgroundColor: "#fff",
-    padding: "30px",
+    backgroundColor: "#ffffff",
+    padding: "24px 30px",
     borderRadius: "12px",
-    boxShadow: "0 4px 15px rgba(0,0,0,0.05)",
+    boxShadow: "0 1px 4px rgba(15,23,43,0.05)",
   },
   title: {
     margin: "0 0 8px 0",
-    color: "#1a202c",
+    color: "#0f172b",
     fontSize: "24px",
     fontWeight: "700",
   },
-  subtitle: { margin: "0 0 24px 0", color: "#718096", fontSize: "14px" },
+  subtitle: { margin: "0 0 24px 0", color: "#64748b", fontSize: "14px" },
   errorBanner: {
     backgroundColor: "#fff5f5",
     color: "#c53030",
@@ -324,38 +326,25 @@ const styles: { [key: string]: React.CSSProperties } = {
   editRow: { display: "flex", flex: 1, gap: "10px", alignItems: "center" },
   editButton: {
     padding: "5px 10px",
-    backgroundColor: "#fff",
+    backgroundColor: "#ffffff",
     border: "1px solid #e2e8f0",
     borderRadius: "6px",
     fontSize: "12px",
     cursor: "pointer",
   },
   deleteButton: {
-    padding: "5px 10px",
-    backgroundColor: "#fff",
-    border: "1px solid #feb2b2",
-    borderRadius: "6px",
-    fontSize: "12px",
-    cursor: "pointer",
-    color: "#c53030",
+    border: "1px solid #fecaca",
+    color: "#dc2626",
   },
   saveButton: {
-    padding: "5px 10px",
-    backgroundColor: "#38a169",
+    backgroundColor: "#2563eb",
     color: "#fff",
     border: "none",
-    borderRadius: "6px",
-    fontSize: "12px",
-    cursor: "pointer",
   },
   cancelButton: {
-    padding: "5px 10px",
-    backgroundColor: "#718096",
-    color: "#fff",
+    backgroundColor: "#e2e8f0",
+    color: "#2563eb",
     border: "none",
-    borderRadius: "6px",
-    fontSize: "12px",
-    cursor: "pointer",
   },
   loader: { textAlign: "center", color: "#a0aec0", padding: "20px" },
 };

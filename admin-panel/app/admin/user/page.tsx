@@ -120,14 +120,14 @@ const UserListPage = () => {
                             user.role === "admin"
                               ? "#dbeafe"
                               : user.role === "editor"
-                              ? "#fef9c3"
-                              : "#f3f4f6",
+                              ? "#fef3c7"
+                              : "#f1f5f9",
                           color:
                             user.role === "admin"
                               ? "#1e40af"
                               : user.role === "editor"
-                              ? "#92400e"
-                              : "#374151",
+                              ? "#b45309"
+                              : "#475569",
                         }}
                       >
                         {user.role}

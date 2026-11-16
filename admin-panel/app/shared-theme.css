@@ -1,0 +1,24 @@
+/* admin-panel/app/shared-theme.css
+   Shared color tokens for the blue dashboard theme.
+   Import this file in any module that needs the theme colors. */
+
+:root {
+  --brand-primary: #2563eb;
+  --brand-primary-dark: #1d4ed8;
+  --brand-primary-darker: #1e40af;
+  --brand-bg: #eff6ff;
+  --brand-bg-soft: #dbeafe;
+  --brand-surface: #ffffff;
+  --brand-surface-alt: #f8fafc;
+  --brand-text: #0f172b;
+  --brand-text-soft: #475569;
+  --brand-muted: #64748b;
+  --brand-muted-2: #94a3b8;
+  --brand-border: #e2e8f0;
+  --brand-danger: #dc2626;
+  --brand-danger-bg: #fef2f2;
+  --brand-danger-border: #fecaca;
+  --brand-success: #059669;
+  --brand-success-bg: #ecfdf5;
+  --brand-accent: #3b82f6;
+}

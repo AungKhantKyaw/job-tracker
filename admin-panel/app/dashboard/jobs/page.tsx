@@ -55,6 +55,7 @@ export default function UserJobsPage() {
   const [statusFilter, setStatusFilter] = useState("All");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalJobs, setTotalJobs] = useState(0);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const requestId = useRef(0);
@@ -93,6 +94,7 @@ export default function UserJobsPage() {
       setStatuses(statusData);
       setJobs(jobData.jobs ?? []);
       setTotalPages(Math.max(1, jobData.totalPages ?? 1));
+      setTotalJobs(jobData.totalJobs ?? 0);
     } catch (err: unknown) {
       if (myRequest === requestId.current) {
         toast.error(errorMessage(err) || "unknown" || "Failed to fetch jobs.");
@@ -144,12 +146,12 @@ export default function UserJobsPage() {
     <div className={styles.page}>
       {/* Header */}
       <div className={styles.header}>
-        <div>
+        <div className={styles.headerLeft}>
           <h1 className={styles.title}>My Applications</h1>
           <p className={styles.subtitle}>
             {loading
               ? "Loading…"
-              : `${jobs.length} application${jobs.length !== 1 ? "s" : ""} tracked`}
+              : `${totalJobs} application${totalJobs !== 1 ? "s" : ""} tracked`}
           </p>
         </div>
         <Link href="/dashboard/jobs/add" className={styles.addBtn}>

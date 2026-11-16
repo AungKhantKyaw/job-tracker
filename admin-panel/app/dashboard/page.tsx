@@ -111,7 +111,7 @@ export default function UserDashboard() {
     <div className={styles.page}>
       {/* Header */}
       <div className={styles.pageHeader}>
-        <div>
+        <div className={styles.headerLeft}>
           <h1 className={styles.greeting}>
             {greeting()}, <span className={styles.greetingName}>{userName}</span> 👋
           </h1>

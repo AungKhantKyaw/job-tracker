@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ToastProvider";
 import styles from "./jobs.module.css";
 import { apiFetch } from "@/lib/api";
@@ -47,6 +48,7 @@ const isOverdue = (followupDate?: string) => {
 
 export default function UserJobsPage() {
   const toast = useToast();
+  const router = useRouter();
   const [jobs, setJobs] = useState<Job[]>([]);
   const [statuses, setStatuses] = useState<Status[]>([]);
   const [loading, setLoading] = useState(true);
@@ -225,9 +227,16 @@ export default function UserJobsPage() {
                     <tr
                       key={job._id}
                       className={`${styles.tr} ${isOverdue(job.followupDate) ? styles.trOverdue : ""}`}
+                      onClick={() => router.push(`/dashboard/jobs/edit/${job._id}`)}
+                      style={{ cursor: "pointer" }}
                     >
                       <td className={styles.td}>
-                        <p className={styles.company}>{job.company}</p>
+                        <Link
+                          href={`/dashboard/jobs/edit/${job._id}`}
+                          className={styles.company}
+                        >
+                          {job.company}
+                        </Link>
                         <p className={styles.location}>{job.location || "Remote"}</p>
                       </td>
                       <td className={styles.td}>{job.role}</td>
@@ -261,7 +270,10 @@ export default function UserJobsPage() {
                             Edit
                           </Link>
                           <button
-                            onClick={() => handleDelete(job._id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(job._id);
+                            }}
                             disabled={deletingId === job._id}
                             className={styles.deleteBtn}
                             style={{

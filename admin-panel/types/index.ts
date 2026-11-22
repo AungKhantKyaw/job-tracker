@@ -96,6 +96,22 @@ export interface JobFormData {
 
 // ─── API Responses ───────────────────────────────────────────────────────────
 
+// ─── Dashboard charts ────────────────────────────────────────────────────────
+
+// One slice of the status-distribution donut.
+export interface StatusDistributionItem {
+  label: string;
+  color: string;
+  count: number;
+}
+
+// One bar of the monthly applications trend.
+export interface MonthlyTrendPoint {
+  month: string; // short label, e.g. "Jan"
+  monthKey: string; // "2026-01", for ordering / lookup
+  count: number;
+}
+
 export interface PaginatedUsers {
   users: User[];
   pagination: Pagination;
